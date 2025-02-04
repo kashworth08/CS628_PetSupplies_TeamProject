@@ -1,0 +1,23 @@
+{
+    "name": "MERN Dev Container",
+    "image": "mcr.microsoft.com/vscode/devcontainers/javascript-node:0-14",
+    "appPort": [
+      "3000:3000",
+      "5000:5000",
+      "27017:27017"
+    ],
+    "workspaceFolder": "/workspace",
+    "postCreateCommand": "sudo apt-get update && sudo apt-get install -y mongodb && sudo service mongodb start && npm install",
+    "customizations": {
+      "vscode": {
+        "extensions": [
+          "dbaeumer.vscode-eslint",
+          "esbenp.prettier-vscode",
+          "ms-azuretools.vscode-docker"
+        ],
+        "settings": {
+          "terminal.integrated.shell.linux": "/bin/bash"
+        }
+      }
+    }
+  }
