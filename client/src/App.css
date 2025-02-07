@@ -1,4 +1,4 @@
-.App {
+/* .App {
   text-align: center;
 }
 
@@ -35,4 +35,27 @@
   to {
     transform: rotate(360deg);
   }
+} */
+
+.App {
+  text-align: center;
+  font-family: sans-serif;
+}
+
+nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  justify-content: center; /* Center the navigation links */
+}
+
+nav li {
+  margin: 0 10px; /* Add some spacing between links */
+}
+
+nav a {
+  text-decoration: none;
+  color: #333;
+  font-weight: bold;
 }
