@@ -6,7 +6,7 @@
       "5000:5000",
       "27017:27017"
     ],
-    "workspaceFolder": "/workspaces/CS628_PetSupplies_TeamProject/src",
+    "workspaceFolder": "/workspace",
     "postCreateCommand": "sudo apt-get update && sudo apt-get install -y mongodb && sudo service mongodb start && npm install",
     "customizations": {
       "vscode": {
