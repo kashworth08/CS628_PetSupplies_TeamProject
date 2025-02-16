@@ -1,10 +1,6 @@
 {
   "name": "MERN Dev Container",
   "image": "mcr.microsoft.com/vscode/devcontainers/javascript-node:0-14",
-  "workspaceFolder": "/workspace",  // Make sure the repository is mounted here
-  "mounts": [
-    "source=${localWorkspaceFolder},target=/workspace,type=bind"  // Explicitly mount the local workspace folder to the container
-  ],
   "forwardPorts": [
     3000,
     5000,
