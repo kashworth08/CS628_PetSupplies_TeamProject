@@ -1,0 +1,70 @@
+/* Home.css */
+
+.hero-section {
+    background-color: #f4f4f4; /* Updated to a neutral light gray */
+    text-align: center;
+    padding: 50px 0;
+  }
+  
+  .hero-title {
+    font-size: 3rem;
+    color: #333;
+  }
+  
+  .hero-subtitle {
+    font-size: 1.5rem;
+    color: #555;
+  }
+  
+  .cta-button {
+    padding: 12px 24px;
+    font-size: 18px;
+    background-color: #333;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    margin-top: 20px;
+  }
+  
+  .section {
+    padding: 20px;
+    background-color: #f9f9f9;
+    text-align: center;
+  }
+  
+  .feature-list {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+  }
+  
+  .feature-item {
+    text-align: center;
+    padding: 10px;
+    width: 30%;
+  }
+  
+  .image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+  }
+  
+  .testimonial-section {
+    background-color: #f0f0f0;
+    padding: 40px 20px;
+    text-align: center;
+  }
+  
+  .testimonial {
+    font-size: 1.2rem;
+    font-style: italic;
+    margin-bottom: 20px;
+  }
+  
+  .footer {
+    text-align: center;
+    padding: 10px 0;
+    background-color: #333;
+    color: #fff;
+  }
