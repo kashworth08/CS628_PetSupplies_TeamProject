@@ -1,0 +1,32 @@
+.register-container {
+  max-width: 400px;
+  margin: auto;
+}
+
+.register-container form {
+  display: flex;
+  flex-direction: column;
+}
+
+.register-container form div {
+  margin-bottom: 15px;
+}
+
+.register-container label {
+  margin-bottom: 5px;
+}
+
+.register-container input {
+  padding: 8px;
+  font-size: 16px;
+}
+
+.error-msg {
+  color: red;
+  font-size: 14px;
+}
+
+.success-msg {
+  color: green;
+  font-size: 14px;
+} 
