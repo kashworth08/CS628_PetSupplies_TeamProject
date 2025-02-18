@@ -1,32 +1,87 @@
 .register-container {
-  max-width: 400px;
-  margin: auto;
+  max-width: 500px;
+  margin: 40px auto;
+  padding: 30px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.register-container h2 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 30px;
+  font-size: 24px;
 }
 
 .register-container form {
   display: flex;
   flex-direction: column;
+  gap: 20px;
 }
 
 .register-container form div {
-  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .register-container label {
-  margin-bottom: 5px;
+  font-weight: 500;
+  color: #555;
+  font-size: 14px;
 }
 
 .register-container input {
-  padding: 8px;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+}
+
+.register-container input:focus {
+  outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.1);
+}
+
+.register-container button {
+  background-color: #4a90e2;
+  color: white;
+  padding: 12px;
+  border: none;
+  border-radius: 4px;
   font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.register-container button:hover {
+  background-color: #357abd;
 }
 
 .error-msg {
-  color: red;
-  font-size: 14px;
+  color: #dc3545;
+  font-size: 13px;
+  margin-top: 4px;
 }
 
 .success-msg {
-  color: green;
+  color: #28a745;
   font-size: 14px;
+  text-align: center;
+  padding: 10px;
+  background-color: #d4edda;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+/* Add responsive design */
+@media (max-width: 600px) {
+  .register-container {
+    margin: 20px;
+    padding: 20px;
+  }
 } 
