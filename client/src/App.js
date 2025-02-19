@@ -5,6 +5,8 @@ import About from "./components/About";
 import Contact from "./components/Contact";
 import Products from "./components/Products";
 import Profile from "./components/Profile";
+import Register from './components/Register';
+import Guest from "./components/Guest";
 import "./App.css"; // Import your CSS file
 
 function App() {
@@ -28,6 +30,12 @@ function App() {
             <li>
               <Link to="/contact">Contact</Link>
             </li>
+            <li>
+              <Link to="/register">Register</Link>
+            </li>
+            <li>
+              <Link to="/guest">Guest</Link>
+            </li>
           </ul>
         </nav>
 
@@ -37,6 +45,8 @@ function App() {
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/guest" element={<Guest />} />
           <Route path="*" element={<h1>Page Not Found</h1>} />
         </Routes>
       </div>
