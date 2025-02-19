@@ -1,6 +1,6 @@
 // migrations/20231027120000-create-users.js (Corrected for migrate-mongo)
 require("dotenv").config();
-
+const { v4: uuidv4 } = require("uuid");
 const mongoose = require("mongoose");
 
 const uri = process.env.MONGODB_URI;
@@ -17,20 +17,57 @@ module.exports = {
     }
 
     try {
-      const userSchema = new mongoose.Schema({
-        // Schema definition
-        Email: { type: String, unique: true, required: true },
-        Password: { type: String, required: true },
-        FirstName: String,
-        LastName: String,
-        Address: String,
-        Role: {
-          type: String,
-          enum: ["customer", "admin"],
-          default: "customer",
+      // const userSchema = new mongoose.Schema({
+      //   // Schema definition
+      //   Email: { type: String, unique: true, required: true },
+      //   Password: { type: String, required: true },
+      //   FirstName: String,
+      //   LastName: String,
+      //   Address: String,
+      //   Role: {
+      //     type: String,
+      //     enum: ["customer", "admin"],
+      //     default: "customer",
+      //   },
+      //   CreatedAt: { type: Date, default: Date.now },
+      // });
+      const userSchema = new mongoose.Schema(
+        {
+          _id: {
+            type: String,
+            default: uuidv4, // Generates a unique ID using uuidv4
+          },
+          username: {
+            type: String,
+            required: true,
+            unique: true,
+            minlength: 3,
+            maxlength: 30,
+          },
+          email: {
+            type: String,
+            required: true,
+            unique: true,
+            match: /^\S+@\S+\.\S+$/, // Basic email validation
+          },
+          password: {
+            type: String,
+            required: true,
+            minlength: 6,
+          },
+          address: {
+            type: String,
+            required: true,
+            maxlength: 100,
+          },
+          role: {
+            type: String,
+            enum: ["user", "admin"],
+            default: "user",
+          },
         },
-        CreatedAt: { type: Date, default: Date.now },
-      });
+        { timestamps: true }
+      );
 
       const collections = await db.listCollections({ name: "users" }).toArray();
 
