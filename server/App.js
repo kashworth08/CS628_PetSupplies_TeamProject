@@ -18,9 +18,20 @@ if (!uri) {
   process.exit(1);
 }
 
-mongoose.connect(uri)
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => console.error('MongoDB connection error:', err));
+mongoose.connect(uri, {
+  serverSelectionTimeoutMS: 5000
+})
+  .then(() => {
+    console.log('MongoDB connected successfully');
+  })
+  .catch(err => {
+    console.error('MongoDB connection error details:', {
+      message: err.message,
+      code: err.code,
+      name: err.name
+    });
+    process.exit(1);
+  });
 
 // Routes
 app.get('/', (req, res) => {
