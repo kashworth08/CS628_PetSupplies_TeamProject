@@ -3,39 +3,36 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config();
 
+// Import routes
+const userRoutes = require('./routes/users');
+
 const app = express();
 const port = process.env.PORT || 5000;
 
-// Middleware
-app.use(cors());
+// CORS configuration
+app.use(cors({
+  origin: '*',  // Allow all origins for testing
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: false
+}));
+
 app.use(express.json());
 
-// MongoDB connection
-const uri = process.env.MONGODB_URI;
-
-if (!uri) {
-  console.error('MongoDB connection string is missing.');
-  process.exit(1);
-}
-
-mongoose.connect(uri, {
-  serverSelectionTimeoutMS: 5000
-})
-  .then(() => {
-    console.log('MongoDB connected successfully');
-  })
-  .catch(err => {
-    console.error('MongoDB connection error details:', {
-      message: err.message,
-      code: err.code,
-      name: err.name
-    });
-    process.exit(1);
-  });
-
 // Routes
+app.use('/api/users', userRoutes);
+
 app.get('/', (req, res) => {
   res.send('Hello World!');
+});
+
+// Add this after your root route
+app.get('/api-test', (req, res) => {
+  res.json({ 
+    message: 'API is working!',
+    timestamp: new Date().toISOString(),
+    env: process.env.NODE_ENV
+  });
 });
 
 // Define a simple schema and model
@@ -65,6 +62,29 @@ app.get('/test', async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+
+// MongoDB connection
+const uri = process.env.MONGODB_URI;
+
+if (!uri) {
+  console.error('MongoDB connection string is missing.');
+  process.exit(1);
+}
+
+mongoose.connect(uri, {
+  serverSelectionTimeoutMS: 5000
+})
+  .then(() => {
+    console.log('MongoDB connected successfully');
+  })
+  .catch(err => {
+    console.error('MongoDB connection error details:', {
+      message: err.message,
+      code: err.code,
+      name: err.name
+    });
+    process.exit(1);
+  });
 
 // Start server
 app.listen(port, () => {
