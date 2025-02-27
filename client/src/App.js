@@ -21,15 +21,7 @@ const Navigation = () => {
 
   return (
     <nav>
-      {isAuthenticated ? (
-        <div className="nav-user">
-          <span>Welcome, {user?.username}</span>
-          <button onClick={logout} className="nav-button logout-button">Logout</button>
-        </div>
-      ) : (
-        <Link to="/login" className="nav-button login-button">Log in</Link>
-      )}
-
+      {/* Navigation items on the left */}
       <ul>
         <li>
           <Link to="/">Home</Link>
@@ -43,11 +35,6 @@ const Navigation = () => {
         <li>
           <Link to="/contact">Contact</Link>
         </li>
-        {!isAuthenticated && (
-          <li>
-            <Link to="/register">Register</Link>
-          </li>
-        )}
         {!isAuthenticated && (
           <li>
             <Link to="/guest">Guest</Link>
@@ -64,6 +51,21 @@ const Navigation = () => {
           </li>
         )}
       </ul>
+
+      {/* Login/Register/User info on the right */}
+      <div className="auth-section">
+        {isAuthenticated ? (
+          <div className="nav-user">
+            <span>Welcome, {user?.username}</span>
+            <button onClick={logout} className="logout-button">Logout</button>
+          </div>
+        ) : (
+          <div className="auth-buttons">
+            <Link to="/login" className="login-button">Log in</Link>
+            <Link to="/register" className="register-button">Register</Link>
+          </div>
+        )}
+      </div>
     </nav>
   );
 };
@@ -73,40 +75,44 @@ function App() {
     <AuthProvider>
       <Router>
         <div className="App">
-          <Navigation />
+          <div className="nav-container">
+            <Navigation />
+          </div>
 
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/products" element={<Products />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/guest" element={<Guest />} />
-            <Route path="/unauthorized" element={<Unauthorized />} />
-            
-            {/* Protected routes */}
-            <Route 
-              path="/profile" 
-              element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              } 
-            />
-            
-            {/* Admin routes */}
-            <Route 
-              path="/admin" 
-              element={
-                <AdminRoute>
-                  <AdminDashboard />
-                </AdminRoute>
-              } 
-            />
-            
-            <Route path="*" element={<h1>Page Not Found</h1>} />
-          </Routes>
+          <div className="content-container">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/products" element={<Products />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/guest" element={<Guest />} />
+              <Route path="/unauthorized" element={<Unauthorized />} />
+              
+              {/* Protected routes */}
+              <Route 
+                path="/profile" 
+                element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Admin routes */}
+              <Route 
+                path="/admin" 
+                element={
+                  <AdminRoute>
+                    <AdminDashboard />
+                  </AdminRoute>
+                } 
+              />
+              
+              <Route path="*" element={<h1>Page Not Found</h1>} />
+            </Routes>
+          </div>
         </div>
       </Router>
     </AuthProvider>
