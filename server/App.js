@@ -9,6 +9,11 @@ const userRoutes = require('./routes/users');
 const app = express();
 const port = process.env.PORT || 5000;
 
+// Check for JWT_SECRET
+if (!process.env.JWT_SECRET) {
+  console.warn('Warning: JWT_SECRET is not set. Using default secret. This is not secure for production.');
+}
+
 // CORS configuration
 app.use(cors({
   origin: '*',  // Allow all origins for testing
@@ -63,6 +68,24 @@ app.get('/test', async (req, res) => {
   }
 });
 
+// Add a route to test MongoDB connection
+app.get('/test-db', async (req, res) => {
+  try {
+    // Simple query to test connection
+    const count = await Test.countDocuments();
+    res.json({ 
+      message: 'MongoDB connection successful',
+      documentCount: count
+    });
+  } catch (err) {
+    console.error('MongoDB test error:', err);
+    res.status(500).json({ 
+      error: 'MongoDB connection failed',
+      message: err.message
+    });
+  }
+});
+
 // MongoDB connection
 const uri = process.env.MONGODB_URI;
 
@@ -72,7 +95,11 @@ if (!uri) {
 }
 
 mongoose.connect(uri, {
-  serverSelectionTimeoutMS: 5000
+  serverSelectionTimeoutMS: 5000,
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  retryWrites: true,
+  w: 'majority'
 })
   .then(() => {
     console.log('MongoDB connected successfully');
