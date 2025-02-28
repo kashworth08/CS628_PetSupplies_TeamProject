@@ -1,0 +1,58 @@
+.unauthorized-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  padding: 20px;
+}
+
+.unauthorized-content {
+  max-width: 500px;
+  text-align: center;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+}
+
+.unauthorized-content h1 {
+  color: #dc3545;
+  margin-bottom: 20px;
+  font-size: 28px;
+}
+
+.icon {
+  margin: 20px 0;
+}
+
+.lock-icon {
+  font-size: 60px;
+  color: #dc3545;
+}
+
+.unauthorized-content p {
+  color: #555;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.actions {
+  margin-top: 30px;
+}
+
+.home-button {
+  display: inline-block;
+  background-color: #4a90e2;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.home-button:hover {
+  background-color: #357abd;
+  text-decoration: none;
+  color: white;
+} 

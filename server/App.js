@@ -1,7 +1,7 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-require('dotenv').config();
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+require("dotenv").config();
 const authRoutes = require("./routes/auth");
 const protectedRoute = require("./routes/protectedRoute");
 
@@ -10,6 +10,11 @@ const userRoutes = require('./routes/users');
 
 const app = express();
 const port = process.env.PORT || 5000;
+
+// Check for JWT_SECRET
+if (!process.env.JWT_SECRET) {
+  console.warn('Warning: JWT_SECRET is not set. Using default secret. This is not secure for production.');
+}
 
 // CORS configuration
 app.use(cors({
@@ -68,17 +73,24 @@ app.get('/test', async (req, res) => {
   }
 });
 
+
+
 // MongoDB connection
 const uri = process.env.MONGODB_URI;
 
 if (!uri) {
-  console.error('MongoDB connection string is missing.');
+  console.error("MongoDB connection string is missing.");
   process.exit(1);
 }
 
-mongoose.connect(uri, {
-  serverSelectionTimeoutMS: 5000
-})
+mongoose
+  .connect(uri, {
+    serverSelectionTimeoutMS: 5000,
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    retryWrites: true,
+    w: 'majority'
+  })
   .then(() => {
     console.log('MongoDB connected successfully');
   })
