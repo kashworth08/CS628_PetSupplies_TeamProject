@@ -23,7 +23,10 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: false
 }));
+// Middleware
 
+app.use("/auth", authRoutes);
+app.use("/protected", protectedRoute);
 app.use(express.json());
 
 // Routes
