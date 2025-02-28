@@ -1,7 +1,9 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-require('dotenv').config();
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+require("dotenv").config();
+const authRoutes = require("./routes/auth");
+const protectedRoute = require("./routes/protectedRoute");
 
 // Import routes
 const userRoutes = require('./routes/users');
@@ -68,39 +70,24 @@ app.get('/test', async (req, res) => {
   }
 });
 
-// Add a route to test MongoDB connection
-app.get('/test-db', async (req, res) => {
-  try {
-    // Simple query to test connection
-    const count = await Test.countDocuments();
-    res.json({ 
-      message: 'MongoDB connection successful',
-      documentCount: count
-    });
-  } catch (err) {
-    console.error('MongoDB test error:', err);
-    res.status(500).json({ 
-      error: 'MongoDB connection failed',
-      message: err.message
-    });
-  }
-});
+
 
 // MongoDB connection
 const uri = process.env.MONGODB_URI;
 
 if (!uri) {
-  console.error('MongoDB connection string is missing.');
+  console.error("MongoDB connection string is missing.");
   process.exit(1);
 }
 
-mongoose.connect(uri, {
-  serverSelectionTimeoutMS: 5000,
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  retryWrites: true,
-  w: 'majority'
-})
+mongoose
+  .connect(uri, {
+    serverSelectionTimeoutMS: 5000,
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    retryWrites: true,
+    w: 'majority'
+  })
   .then(() => {
     console.log('MongoDB connected successfully');
   })
