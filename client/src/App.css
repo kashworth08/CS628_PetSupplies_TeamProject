@@ -3,21 +3,39 @@
   font-family: sans-serif;
 }
 
+/* Container for the navigation bar */
+.nav-container {
+  width: 100%;
+  background-color: #f4f4f4;
+  border-bottom: 2px solid #ddd;
+}
+
+/* Container for the main content */
+.content-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
 nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #f4f4f4; /* Light neutral background */
-  padding: 10px 20px;
-  border-bottom: 2px solid #ddd;
+  background-color: #f4f4f4;
+  padding: 10px 30px; /* Increased horizontal padding for more space on both sides */
+  max-width: 1200px; /* Set a max-width to prevent stretching on large screens */
+  margin: 0 auto; /* Center the navigation bar */
+  box-sizing: border-box; /* Include padding in width calculation */
 }
 
+/* Move navigation items to the left */
 nav ul {
   list-style: none;
   padding: 0;
   margin: 0;
   display: flex;
   gap: 20px; /* Spacing between nav items */
+  margin-right: auto; /* This pushes the ul to the left */
 }
 
 nav li {
@@ -37,17 +55,95 @@ nav a:hover {
   background-color: #ddd;
 }
 
-/* Log in button positioned on the left */
+/* Container for auth elements (login button or user info) */
+.auth-section {
+  margin-left: 20px; /* Space between nav items and auth section */
+  padding-right: 0; /* Ensure no extra padding on the right */
+}
+
+/* Container for login and register buttons */
+.auth-buttons {
+  display: flex;
+  gap: 10px; /* Space between login and register buttons */
+}
+
+/* Login button styled like other navigation items but with distinct colors */
 .login-button {
-  margin-right: auto; /* Pushes other items to the right */
+  display: inline-block;
   padding: 10px 15px;
-  background-color: #444;
+  background-color: #4a90e2;
   color: white;
   border-radius: 5px;
   text-decoration: none;
-  transition: background 0.3s;
+  font-weight: bold;
+  transition: background-color 0.3s;
+  border: none; /* For button element */
+  cursor: pointer;
+  font-size: 16px;
 }
 
 .login-button:hover {
-  background-color: #555;
+  background-color: #357abd;
+}
+
+/* Register button styling */
+.register-button {
+  display: inline-block;
+  padding: 10px 15px;
+  background-color: #4a90e2;
+  color: white;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: bold;
+  transition: background-color 0.3s;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.register-button:hover {
+  background-color: #357abd;
+}
+
+/* Navigation styles */
+.nav-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-user span {
+  color: #333;
+  font-weight: 500;
+  margin-right: 10px;
+}
+
+.logout-button {
+  background-color: #dc3545;
+  padding: 8px 15px;
+  color: white;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s;
+}
+
+.logout-button:hover {
+  background-color: #c82333;
+}
+
+.admin-link {
+  color: #dc3545 !important;
+  font-weight: 600;
+}
+
+/* Loading indicator */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 18px;
+  color: #666;
 }
