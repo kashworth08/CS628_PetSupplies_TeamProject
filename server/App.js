@@ -1,12 +1,12 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
-require("dotenv").config();
-const authRoutes = require("./routes/auth");
-const protectedRoute = require("./routes/protectedRoute");
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+require('dotenv').config();
 
 // Import routes
 const userRoutes = require('./routes/users');
+const authRoutes = require("./routes/auth");
+const protectedRoute = require("./routes/protectedRoute");
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -18,32 +18,36 @@ if (!process.env.JWT_SECRET) {
 
 // CORS configuration
 app.use(cors({
-  origin: '*',  // Allow all origins for testing
+  origin: ['http://localhost:3000', 'https://cs628-petsupplies-teamproject.onrender.com', '*'], // Added '*' for File 2 and existing origins
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: false
+  credentials: true // Keep credentials: true from file 1
 }));
+
 // Middleware
-
-app.use("/auth", authRoutes);
-app.use("/protected", protectedRoute);
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // Added urlencoded from file 1
 
-// Routes
-app.use('/api/users', userRoutes);
-
+// Simple test route
 app.get('/', (req, res) => {
+  console.log('Root route hit');
   res.send('Hello World!');
 });
 
-// Add this after your root route
+// Test route to check if server is responding
 app.get('/api-test', (req, res) => {
+  console.log('API test route hit');
   res.json({ 
     message: 'API is working!',
     timestamp: new Date().toISOString(),
     env: process.env.NODE_ENV
   });
 });
+
+// Routes
+app.use('/api/users', userRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/protected', protectedRoute);
 
 // Define a simple schema and model
 const Schema = mongoose.Schema;
@@ -54,6 +58,7 @@ const Test = mongoose.model('Test', testSchema);
 
 // Add a new route to create a test document
 app.post('/test', async (req, res) => {
+  console.log('Test document creation route hit with data:', req.body);
   const newTest = new Test({ name: req.body.name });
   try {
     const savedTest = await newTest.save();
@@ -65,6 +70,7 @@ app.post('/test', async (req, res) => {
 
 // Add a new route to get all test documents
 app.get('/test', async (req, res) => {
+  console.log('Get all test documents route hit');
   try {
     const tests = await Test.find();
     res.json(tests);
@@ -73,27 +79,22 @@ app.get('/test', async (req, res) => {
   }
 });
 
-
-
 // MongoDB connection
 const uri = process.env.MONGODB_URI;
 
 if (!uri) {
-  console.error("MongoDB connection string is missing.");
+  console.error('MongoDB connection string is missing.');
   process.exit(1);
 }
 
-mongoose
-  .connect(uri, {
+mongoose.connect(uri, {
     serverSelectionTimeoutMS: 5000,
     useNewUrlParser: true,
     useUnifiedTopology: true,
     retryWrites: true,
     w: 'majority'
-  })
-  .then(() => {
-    console.log('MongoDB connected successfully');
-  })
+})
+  .then(() => console.log('MongoDB connected successfully'))
   .catch(err => {
     console.error('MongoDB connection error details:', {
       message: err.message,
@@ -106,4 +107,5 @@ mongoose
 // Start server
 app.listen(port, () => {
   console.log(`Server is running on port: ${port}`);
+  console.log(`Test the API at: http://localhost:${port}/api-test`);
 });
