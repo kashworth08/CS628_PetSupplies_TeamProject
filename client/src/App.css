@@ -147,3 +147,10 @@ nav a:hover {
   font-size: 18px;
   color: #666;
 }
+
+.active-link {
+  font-weight: bold;
+  color: white; /* Or any styling you prefer */
+  background-color: #555;
+  
+}

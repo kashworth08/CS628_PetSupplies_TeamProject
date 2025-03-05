@@ -27,11 +27,11 @@ module.exports = {
       });
 
       const collections = await db
-        .listCollections({ name: "product_images" })
+        .listCollections({ name: "productimages" })
         .toArray();
 
       if (collections.length === 0) {
-        await db.createCollection("product_images"); // Use the db object directly
+        await db.createCollection("productimages"); // Use the db object directly
         console.log("Product Image collection created.");
       } else {
         console.log("Product Image collection already exists.");

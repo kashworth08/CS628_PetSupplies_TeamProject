@@ -55,21 +55,12 @@ router.post("/login", async (req, res) => {
     if (!passwordMatch) {
       return res.status(401).json({ error: "Authentication failed" });
     }
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "2d",
     });
     res.status(200).json({ token });
   } catch (error) {
     res.status(500).json({ error: "Login failed" });
-  }
-});
-
-router.get("/test-user", async (req, res) => {
-  try {
-    const tests = [];
-    res.json(tests);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
   }
 });
 
