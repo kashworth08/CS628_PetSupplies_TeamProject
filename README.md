@@ -26,6 +26,15 @@ MONGODB_URI=mongodb+srv://<username>:<password>@<cluster_url>/<database_name>?re
 PORT=<port_number>
 JWT_SECRET=<paste-the-generated-string-here>
 ```
+## Run Migration for Database
+```bash
+node run-migration.js
+```
+
+## Seed Admin Users
+```bash
+node seedAdmins.js
+```
 
 ## Run Local Developement (Server Side)
 

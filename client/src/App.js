@@ -1,12 +1,18 @@
 import React, { useContext } from "react";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Link,
+  NavLink,
+} from "react-router-dom";
 import Home from "./components/Home";
 import About from "./components/About";
 import Contact from "./components/Contact";
 import Products from "./components/Products";
 import Profile from "./components/Profile";
-import Register from './components/Register';
-import Login from './components/Login';
+import Register from "./components/Register";
+import Login from "./components/Login";
 import Guest from "./components/Guest";
 import AdminDashboard from "./components/AdminDashboard";
 import Unauthorized from "./components/Unauthorized";
@@ -24,30 +30,67 @@ const Navigation = () => {
       {/* Navigation items on the left */}
       <ul>
         <li>
-          <Link to="/">Home</Link>
+          <NavLink
+            className={({ isActive }) => (isActive ? "active-link" : "")}
+            to="/"
+          >
+            Home
+          </NavLink>
         </li>
         <li>
-          <Link to="/products">Products</Link>
+          <NavLink
+            className={({ isActive }) => (isActive ? "active-link" : "")}
+            to="/products"
+          >
+            Products
+          </NavLink>
         </li>
         <li>
-          <Link to="/about">About</Link>
+          <NavLink
+            className={({ isActive }) => (isActive ? "active-link" : "")}
+            to="/about"
+          >
+            About
+          </NavLink>
         </li>
         <li>
-          <Link to="/contact">Contact</Link>
+          <NavLink
+            className={({ isActive }) => (isActive ? "active-link" : "")}
+            to="/contact"
+          >
+            Contact
+          </NavLink>
         </li>
         {!isAuthenticated && (
           <li>
-            <Link to="/guest">Guest</Link>
+            <NavLink
+              className={({ isActive }) => (isActive ? "active-link" : "")}
+              to="/guest"
+            >
+              Guest
+            </NavLink>
           </li>
         )}
         {isAuthenticated && (
           <li>
-            <Link to="/profile">Profile</Link>
+            <NavLink
+              className={({ isActive }) => (isActive ? "active-link" : "")}
+              to="/profile"
+            >
+              Profile
+            </NavLink>
           </li>
         )}
         {isAuthenticated && isAdmin() && (
           <li>
-            <Link to="/admin" className="admin-link">Admin Dashboard</Link>
+            <NavLink
+              className={({ isActive }) =>
+                isActive ? "active-link admin-link" : "admin-link"
+              }
+              to="/admin"
+            >
+              Admin Dashboard
+            </NavLink>
           </li>
         )}
       </ul>
@@ -57,12 +100,18 @@ const Navigation = () => {
         {isAuthenticated ? (
           <div className="nav-user">
             <span>Welcome, {user?.username}</span>
-            <button onClick={logout} className="logout-button">Logout</button>
+            <button onClick={logout} className="logout-button">
+              Logout
+            </button>
           </div>
         ) : (
           <div className="auth-buttons">
-            <Link to="/login" className="login-button">Log in</Link>
-            <Link to="/register" className="register-button">Register</Link>
+            <Link to="/login" className="login-button">
+              Log in
+            </Link>
+            <Link to="/register" className="register-button">
+              Register
+            </Link>
           </div>
         )}
       </div>
@@ -89,27 +138,27 @@ function App() {
               <Route path="/register" element={<Register />} />
               <Route path="/guest" element={<Guest />} />
               <Route path="/unauthorized" element={<Unauthorized />} />
-              
+
               {/* Protected routes */}
-              <Route 
-                path="/profile" 
+              <Route
+                path="/profile"
                 element={
                   <ProtectedRoute>
                     <Profile />
                   </ProtectedRoute>
-                } 
+                }
               />
-              
+
               {/* Admin routes */}
-              <Route 
-                path="/admin" 
+              <Route
+                path="/admin"
                 element={
                   <AdminRoute>
                     <AdminDashboard />
                   </AdminRoute>
-                } 
+                }
               />
-              
+
               <Route path="*" element={<h1>Page Not Found</h1>} />
             </Routes>
           </div>

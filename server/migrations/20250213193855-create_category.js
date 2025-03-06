@@ -1,5 +1,6 @@
 // migrations/20231027120000-create-users.js (Corrected for migrate-mongo)
 require("dotenv").config();
+const { v4: uuidv4 } = require("uuid");
 
 const mongoose = require("mongoose");
 
@@ -17,13 +18,12 @@ module.exports = {
     }
 
     try {
-      const categorySchema = new mongoose.Schema({
-        Name: { type: String, required: true },
-        ParentCategoryID: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Category",
-        }, // Self-reference for subcategories
-      });
+      const categorySchema = new mongoose.Schema(
+        {
+          Name: { type: String, required: true },
+        },
+        { timestamps: true }
+      );
 
       const collections = await db
         .listCollections({ name: "categories" })
