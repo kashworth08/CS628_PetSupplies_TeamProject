@@ -1,21 +1,28 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
+<<<<<<< HEAD
 const User = require('../models/User');
 const { auth, admin } = require('../middleware/auth');
 const jwt = require('jsonwebtoken');
 const { validateRegistration, validateLogin } = require('../middleware/validation');
+=======
+const User = require("../models/User");
+const { auth, admin } = require("../middleware/auth");
+const jwt = require("jsonwebtoken");
+const { validateRegistration } = require("../middleware/validation");
+>>>>>>> origin/main
 
 // @route   POST /api/users/register
 // @desc    Register a new user
 // @access  Public
-router.post('/register', validateRegistration, async (req, res) => {
+router.post("/register", validateRegistration, async (req, res) => {
   const { username, email, password, address } = req.body;
 
   try {
     // Check for existing user
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ msg: 'User already exists' });
+      return res.status(400).json({ msg: "User already exists" });
     }
 
     // Create new user
@@ -31,8 +38,8 @@ router.post('/register', validateRegistration, async (req, res) => {
     // Create JWT token
     const token = jwt.sign(
       { id: savedUser._id },
-      process.env.JWT_SECRET || 'your_jwt_secret',
-      { expiresIn: '1d' }
+      process.env.JWT_SECRET || "your_jwt_secret",
+      { expiresIn: "1d" }
     );
 
     // Respond with user data and token
@@ -47,43 +54,62 @@ router.post('/register', validateRegistration, async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Registration error:', error);
-    res.status(500).json({ msg: 'Server error' });
+    console.error("Registration error:", error);
+    res.status(500).json({ msg: "Server error" });
   }
 });
 
 // @route   POST /api/users/login
 // @desc    Authenticate user & get token
 // @access  Public
+<<<<<<< HEAD
 router.post('/login', validateLogin, async (req, res) => {
   const { email, password } = req.body;
 
+=======
+router.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+
+  // Basic validation
+  if (!email || !password) {
+    return res.status(400).json({ msg: "Please enter all fields" });
+  }
+
+>>>>>>> origin/main
   try {
     // Check for existing user
     const user = await User.findOne({ email });
     if (!user) {
+<<<<<<< HEAD
       return res.status(400).json({ 
         msg: 'User does not exist',
         field: 'email',
         errorType: 'user_not_found'
       });
+=======
+      return res.status(400).json({ msg: "Invalid credentials" });
+>>>>>>> origin/main
     }
 
     // Validate password
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
+<<<<<<< HEAD
       return res.status(400).json({ 
         msg: 'Invalid password',
         field: 'password',
         errorType: 'invalid_password'
       });
+=======
+      return res.status(400).json({ msg: "Invalid credentials" });
+>>>>>>> origin/main
     }
 
     // Create JWT token
     const token = jwt.sign(
       { id: user._id },
-      process.env.JWT_SECRET || 'your_jwt_secret',
-      { expiresIn: '1d' }
+      process.env.JWT_SECRET || "your_jwt_secret",
+      { expiresIn: "1d" }
     );
 
     // Log successful login
@@ -101,15 +127,62 @@ router.post('/login', validateLogin, async (req, res) => {
       },
     });
   } catch (error) {
+<<<<<<< HEAD
     console.error('Login error:', error);
     res.status(500).json({ msg: 'Server error', errorType: 'server_error' });
+=======
+    console.error("Login error:", error);
+    res.status(500).json({ msg: "Server error" });
+>>>>>>> origin/main
   }
+});
+
+// @route   GET /api/users/profile
+// @desc    Get user profile
+// @access  Private
+router.get("/profile", auth, async (req, res) => {
+  const user = req.user;
+  if (!user) {
+    return res.status(404).send({ msg: "User not found" });
+  }
+
+  // Send only the profile information, not the entire user object (security best practice).
+  res.send({ profile: user });
+});
+
+// Route to update user profile
+router.put("/profile", auth, async (req, res) => {
+  // const user = req.user;
+  let user = await User.findById(req.user.id);
+  const { username, email, password, address } = req.body;
+
+  if (!user) {
+    return res.status(404).send({ msg: "User not found" });
+  }
+  // Update fields
+  username && (user.username = username);
+  password && (user.password = password);
+  email && (user.email = email);
+  address && (user.address = address);
+
+  await user.save();
+
+  // Simulate database update success (replace with actual database update)
+  res.send({
+    message: "Profile updated successfully",
+    user: {
+      id: user._id,
+      username: user.username,
+      email: user.email,
+      address: user.address,
+    },
+  });
 });
 
 // @route   GET /api/users/me
 // @desc    Get current user
 // @access  Private
-router.get('/me', auth, async (req, res) => {
+router.get("/me", auth, async (req, res) => {
   try {
     res.json({
       id: req.user._id,
@@ -119,42 +192,44 @@ router.get('/me', auth, async (req, res) => {
       role: req.user.role,
     });
   } catch (error) {
-    console.error('Get user error:', error);
-    res.status(500).json({ msg: 'Server error' });
+    console.error("Get user error:", error);
+    res.status(500).json({ msg: "Server error" });
   }
 });
 
 // @route   GET /api/users
 // @desc    Get all users
 // @access  Private/Admin
-router.get('/', auth, admin, async (req, res) => {
+router.get("/", auth, admin, async (req, res) => {
   try {
-    const users = await User.find().select('-password');
-    res.json(users.map(user => ({
-      id: user._id,
-      username: user.username,
-      email: user.email,
-      address: user.address,
-      role: user.role,
-      createdAt: user.createdAt
-    })));
+    const users = await User.find().select("-password");
+    res.json(
+      users.map((user) => ({
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        address: user.address,
+        role: user.role,
+        createdAt: user.createdAt,
+      }))
+    );
   } catch (error) {
-    console.error('Get all users error:', error);
-    res.status(500).json({ msg: 'Server error' });
+    console.error("Get all users error:", error);
+    res.status(500).json({ msg: "Server error" });
   }
 });
 
 // @route   PUT /api/users/:id
 // @desc    Update a user
 // @access  Private/Admin
-router.put('/:id', auth, admin, async (req, res) => {
+router.put("/:id", auth, admin, async (req, res) => {
   const { username, email, role, address } = req.body;
 
   try {
     let user = await User.findById(req.params.id);
 
     if (!user) {
-      return res.status(404).json({ msg: 'User not found' });
+      return res.status(404).json({ msg: "User not found" });
     }
 
     // Update fields
@@ -173,29 +248,29 @@ router.put('/:id', auth, admin, async (req, res) => {
       role: user.role,
     });
   } catch (error) {
-    console.error('Update user error:', error);
-    res.status(500).json({ msg: 'Server error' });
+    console.error("Update user error:", error);
+    res.status(500).json({ msg: "Server error" });
   }
 });
 
 // @route   DELETE /api/users/:id
 // @desc    Delete a user
 // @access  Private/Admin
-router.delete('/:id', auth, admin, async (req, res) => {
+router.delete("/:id", auth, admin, async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
 
     if (!user) {
-      return res.status(404).json({ msg: 'User not found' });
+      return res.status(404).json({ msg: "User not found" });
     }
 
     await User.findByIdAndDelete(req.params.id);
 
-    res.json({ msg: 'User removed' });
+    res.json({ msg: "User removed" });
   } catch (error) {
-    console.error('Delete user error:', error);
-    res.status(500).json({ msg: 'Server error' });
+    console.error("Delete user error:", error);
+    res.status(500).json({ msg: "Server error" });
   }
 });
 
-module.exports = router; 
+module.exports = router;

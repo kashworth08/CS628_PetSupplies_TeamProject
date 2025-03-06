@@ -148,6 +148,7 @@ nav a:hover {
   color: #666;
 }
 
+<<<<<<< HEAD
 .admin-login-link {
   color: #6c757d;
   text-decoration: none;
@@ -161,4 +162,11 @@ nav a:hover {
 .admin-login-link:hover {
   background-color: #6c757d;
   color: white;
+=======
+.active-link {
+  font-weight: bold;
+  color: white; /* Or any styling you prefer */
+  background-color: #555;
+  
+>>>>>>> origin/main
 }
