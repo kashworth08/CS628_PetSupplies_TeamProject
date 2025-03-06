@@ -7,6 +7,8 @@ require('dotenv').config();
 const userRoutes = require('./routes/users');
 const authRoutes = require("./routes/auth");
 const protectedRoute = require("./routes/protectedRoute");
+const productRoutes = require('./routes/products');
+const categoryRoutes = require('./routes/categories');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -48,6 +50,8 @@ app.get('/api-test', (req, res) => {
 app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/protected', protectedRoute);
+app.use('/api/products', productRoutes);
+app.use('/api/categories', categoryRoutes);
 
 // Define a simple schema and model
 const Schema = mongoose.Schema;
