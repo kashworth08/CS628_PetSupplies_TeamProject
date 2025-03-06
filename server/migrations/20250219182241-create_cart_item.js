@@ -33,11 +33,11 @@ module.exports = {
       });
 
       const collections = await db
-        .listCollections({ name: "cart_items" })
+        .listCollections({ name: "cartitems" })
         .toArray();
 
       if (collections.length === 0) {
-        await db.createCollection("cart_items"); // Use the db object directly
+        await db.createCollection("cartitems"); // Use the db object directly
         console.log("Cart Item collection created.");
       } else {
         console.log("Cart Item collection already exists.");

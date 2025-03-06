@@ -1,6 +1,6 @@
 // migrations/20231027120000-create-users.js (Corrected for migrate-mongo)
 require("dotenv").config();
-const { v4: uuidv4 } = require("uuid");
+// const { v4: uuidv4 } = require("uuid");
 const mongoose = require("mongoose");
 
 const uri = process.env.MONGODB_URI;
@@ -19,10 +19,6 @@ module.exports = {
     try {
       const userSchema = new mongoose.Schema(
         {
-          _id: {
-            type: String,
-            default: uuidv4, // Generates a unique ID using uuidv4
-          },
           username: {
             type: String,
             required: true,

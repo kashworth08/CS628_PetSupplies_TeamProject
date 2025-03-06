@@ -81,6 +81,55 @@ router.get("/get-all", async (req, res) => {
   }
 });
 
+// Fetch Products with Search and Filter Options
+// @route   GET /api/products/products-filter
+// @desc    Get products with search and filter options
+// @access  Public
+router.get("/products-filter", async (req, res) => {
+  try {
+    const { search, category, minPrice, maxPrice, sortBy, sortOrder } =
+      req.query;
+
+    let filter = {};
+
+    if (search) {
+      filter.Name = { $regex: search, $options: "i" }; // Case-insensitive search
+    }
+
+    if (category) {
+      const foundCategory = await Category.findOne({ Name: category });
+      if (foundCategory) {
+        filter.CategoryID = foundCategory._id;
+      } else {
+        return res.status(400).json({ message: "Category not found" });
+      }
+    }
+
+    if (minPrice) {
+      filter.Price = { $gte: parseFloat(minPrice) };
+    }
+
+    if (maxPrice) {
+      filter.Price = { ...filter.Price, $lte: parseFloat(maxPrice) };
+    }
+
+    let sort = {};
+
+    if (sortBy) {
+      const order = sortOrder === "desc" ? -1 : 1;
+      sort[sortBy] = order;
+    }
+
+    const products = await Product.find(filter)
+      .sort(sort)
+      .populate("CategoryID");
+
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // @route   GET /api/products/:id
 // @desc    Get a product by ID
 // @access  Public
@@ -156,4 +205,5 @@ router.delete("/:id", auth, admin, async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
 module.exports = router;
