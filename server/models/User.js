@@ -1,15 +1,11 @@
 // models/User.js
 
 const mongoose = require("mongoose");
-const { v4: uuidv4 } = require("uuid");
+// const { v4: uuidv4 } = require("uuid");
 const bcrypt = require("bcrypt");
 
 const UserSchema = new mongoose.Schema(
   {
-    _id: {
-      type: String,
-      default: uuidv4, // Generates a unique ID using uuidv4
-    },
     username: {
       type: String,
       required: true,

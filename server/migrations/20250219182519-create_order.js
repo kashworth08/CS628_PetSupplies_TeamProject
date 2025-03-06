@@ -1,5 +1,6 @@
 // migrations/20231027120000-create-users.js (Corrected for migrate-mongo)
 require("dotenv").config();
+const { v4: uuidv4 } = require("uuid");
 
 const mongoose = require("mongoose");
 
@@ -32,7 +33,10 @@ module.exports = {
         },
         ShippingAddress: String,
         PaymentMethod: String,
-        TransactionID: String,
+        TransactionID: {
+          type: String,
+          default: uuidv4, // Generates a unique ID using uuidv4
+        },
       });
 
       const collections = await db
