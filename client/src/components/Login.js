@@ -1,5 +1,5 @@
-import React, { useState, useContext } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useContext, useEffect } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
 import './Login.css';
 
@@ -9,14 +9,64 @@ const Login = () => {
     password: ''
   });
   const [formErrors, setFormErrors] = useState({});
+  const [isAdminAttempt, setIsAdminAttempt] = useState(false);
+  const [testMessage, setTestMessage] = useState('');
   
-  const { login, error } = useContext(AuthContext);
+  const { login, error, isAuthenticated, isAdmin } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
   
   const { email, password } = formData;
   
+  // Simple test function to check if JavaScript events are working
+  const testClick = () => {
+    console.log('Test button clicked!');
+    setTestMessage('Test button works! JavaScript events are functioning.');
+    alert('Test button clicked!');
+  };
+
+  // Check if user is trying to access admin route
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('admin') === 'true') {
+      setIsAdminAttempt(true);
+    }
+  }, [location]);
+  
+  // Redirect if already logged in
+  useEffect(() => {
+    console.log('Login: Redirect useEffect triggered with state:', { 
+      isAuthenticated, 
+      isAdminAttempt, 
+      isAdmin: isAdmin?.(), 
+      location 
+    });
+    
+    if (isAuthenticated) {
+      console.log('Login: User is authenticated, determining redirect path');
+      if (isAdminAttempt && !isAdmin()) {
+        console.log('Login: Admin attempt but user is not admin, redirecting to unauthorized');
+        navigate('/unauthorized');
+      } else {
+        const from = location.state?.from?.pathname || '/';
+        console.log(`Login: Redirecting to ${from}`);
+        navigate(from);
+      }
+    } else {
+      console.log('Login: User is not authenticated, no redirect needed');
+    }
+  }, [isAuthenticated, isAdmin, isAdminAttempt, navigate, location]);
+  
   const handleChange = e => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    
+    // Clear error for this field when user starts typing
+    if (formErrors[e.target.name]) {
+      setFormErrors({
+        ...formErrors,
+        [e.target.name]: ''
+      });
+    }
   };
   
   const validate = () => {
@@ -24,10 +74,17 @@ const Login = () => {
     
     if (!email) {
       errors.email = 'Email is required';
+    } else {
+      const emailRegex = /^\S+@\S+\.\S+$/;
+      if (!emailRegex.test(email)) {
+        errors.email = 'Please enter a valid email';
+      }
     }
     
     if (!password) {
       errors.password = 'Password is required';
+    } else if (password.length < 6) {
+      errors.password = 'Password must be at least 6 characters';
     }
     
     setFormErrors(errors);
@@ -37,20 +94,49 @@ const Login = () => {
   const handleSubmit = async e => {
     e.preventDefault();
     
+    console.log('Login form submitted with:', { email, password, isAdminAttempt });
+    
     if (!validate()) {
+      console.log('Validation failed');
       return;
     }
     
+    console.log('Attempting login...');
     const success = await login(email, password);
     
+    console.log('Login result:', success);
+    
     if (success) {
-      navigate('/');
+      console.log('Login successful, navigation should be handled by useEffect');
+      // Login successful, navigation is handled in the useEffect
+    } else {
+      console.log('Login failed, error:', error);
     }
   };
   
   return (
     <div className="login-container">
-      <h2>Login</h2>
+      <h2>{isAdminAttempt ? 'Admin Login' : 'Login'}</h2>
+      
+      {/* Test button to check if JavaScript events are working */}
+      <div className="test-section">
+        <button 
+          type="button" 
+          onClick={testClick} 
+          style={{ 
+            padding: '10px', 
+            margin: '10px 0', 
+            backgroundColor: '#6c757d', 
+            color: 'white', 
+            border: 'none', 
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          Test JavaScript Events
+        </button>
+        {testMessage && <p style={{ color: 'green' }}>{testMessage}</p>}
+      </div>
       
       {error && <div className="error-message">{error}</div>}
       
@@ -64,6 +150,7 @@ const Login = () => {
             value={email}
             onChange={handleChange}
             className={formErrors.email ? 'error' : ''}
+            placeholder="Enter your email"
           />
           {formErrors.email && <span className="error-text">{formErrors.email}</span>}
         </div>
@@ -77,16 +164,26 @@ const Login = () => {
             value={password}
             onChange={handleChange}
             className={formErrors.password ? 'error' : ''}
+            placeholder="Enter your password"
           />
           {formErrors.password && <span className="error-text">{formErrors.password}</span>}
         </div>
         
-        <button type="submit" className="login-button">Login</button>
+        <button type="submit" className="login-button">
+          {isAdminAttempt ? 'Admin Login' : 'Login'}
+        </button>
       </form>
       
-      <div className="register-link">
-        Don't have an account? <Link to="/register">Register</Link>
-      </div>
+      {isAdminAttempt ? (
+        <div className="admin-note">
+          <p>This area is restricted to administrators only.</p>
+          <Link to="/login" className="regular-login-link">Regular User Login</Link>
+        </div>
+      ) : (
+        <div className="register-link">
+          Don't have an account? <Link to="/register">Register</Link>
+        </div>
+      )}
     </div>
   );
 };

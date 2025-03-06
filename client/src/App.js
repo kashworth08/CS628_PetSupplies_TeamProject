@@ -10,10 +10,17 @@ import Login from './components/Login';
 import Guest from "./components/Guest";
 import AdminDashboard from "./components/AdminDashboard";
 import Unauthorized from "./components/Unauthorized";
+import Cart from "./components/Cart";
+import Checkout from "./components/Checkout";
+import OrderConfirmation from "./components/OrderConfirmation";
+import TestAuth from "./components/TestAuth"; // Import the TestAuth component
 import { AuthProvider } from "./context/AuthContext";
 import AuthContext from "./context/AuthContext";
-import { ProtectedRoute, AdminRoute } from "./components/ProtectedRoute";
+import ProtectedRoutes from "./components/ProtectedRoute";
 import "./App.css"; // Import your CSS file
+
+// Destructure the ProtectedRoutes object
+const { ProtectedRoute, AdminRoute } = ProtectedRoutes;
 
 // Navigation component with conditional rendering based on auth state
 const Navigation = () => {
@@ -35,19 +42,33 @@ const Navigation = () => {
         <li>
           <Link to="/contact">Contact</Link>
         </li>
+        {/* Commenting out the test-auth link */}
+        {/* <li>
+          <Link to="/test-auth">Test Auth</Link>
+        </li> */}
         {!isAuthenticated && (
           <li>
             <Link to="/guest">Guest</Link>
           </li>
         )}
         {isAuthenticated && (
-          <li>
-            <Link to="/profile">Profile</Link>
-          </li>
+          <>
+            <li>
+              <Link to="/profile">Profile</Link>
+            </li>
+            <li>
+              <Link to="/cart">Cart</Link>
+            </li>
+          </>
         )}
         {isAuthenticated && isAdmin() && (
           <li>
             <Link to="/admin" className="admin-link">Admin Dashboard</Link>
+          </li>
+        )}
+        {!isAuthenticated && (
+          <li>
+            <Link to="/login?admin=true" className="admin-login-link">Admin Login</Link>
           </li>
         )}
       </ul>
@@ -56,7 +77,7 @@ const Navigation = () => {
       <div className="auth-section">
         {isAuthenticated ? (
           <div className="nav-user">
-            <span>Welcome, {user?.username}</span>
+            <span>Welcome, {user?.username} {isAdmin() && <small>(Admin)</small>}</span>
             <button onClick={logout} className="logout-button">Logout</button>
           </div>
         ) : (
@@ -89,6 +110,7 @@ function App() {
               <Route path="/register" element={<Register />} />
               <Route path="/guest" element={<Guest />} />
               <Route path="/unauthorized" element={<Unauthorized />} />
+              <Route path="/test-auth" element={<TestAuth />} />
               
               {/* Protected routes */}
               <Route 
@@ -96,6 +118,33 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Profile />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/cart" 
+                element={
+                  <ProtectedRoute>
+                    <Cart />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/checkout" 
+                element={
+                  <ProtectedRoute>
+                    <Checkout />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/order-confirmation" 
+                element={
+                  <ProtectedRoute>
+                    <OrderConfirmation />
                   </ProtectedRoute>
                 } 
               />

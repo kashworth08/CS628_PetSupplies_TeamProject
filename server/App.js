@@ -9,6 +9,9 @@ const authRoutes = require("./routes/auth");
 const protectedRoute = require("./routes/protectedRoute");
 const productRoutes = require('./routes/products');
 const categoryRoutes = require('./routes/categories');
+const cartRoutes = require('./routes/cart');
+const paymentRoutes = require('./routes/payments');
+const orderRoutes = require('./routes/orders');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -52,6 +55,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/protected', protectedRoute);
 app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/cart', cartRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/orders', orderRoutes);
 
 // Define a simple schema and model
 const Schema = mongoose.Schema;

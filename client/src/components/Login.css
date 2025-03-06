@@ -92,4 +92,31 @@
 
 .register-link a:hover {
   text-decoration: underline;
+}
+
+.admin-note {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  text-align: center;
+  border-left: 4px solid #dc3545;
+}
+
+.admin-note p {
+  margin-bottom: 10px;
+  color: #495057;
+  font-size: 0.9rem;
+}
+
+.regular-login-link {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+
+.regular-login-link:hover {
+  color: #0056b3;
+  text-decoration: underline;
 } 

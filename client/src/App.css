@@ -147,3 +147,18 @@ nav a:hover {
   font-size: 18px;
   color: #666;
 }
+
+.admin-login-link {
+  color: #6c757d;
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  border: 1px solid #6c757d;
+}
+
+.admin-login-link:hover {
+  background-color: #6c757d;
+  color: white;
+}
