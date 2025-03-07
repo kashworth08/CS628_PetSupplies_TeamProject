@@ -1,9 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const User = require("../models/User");
-const { auth, admin } = require("../middleware/auth");
-const jwt = require("jsonwebtoken");
-const { validateRegistration } = require("../middleware/validation");
+const User = require('../models/User');
+const { auth, admin } = require('../middleware/auth');
+const jwt = require('jsonwebtoken');
+const { validateRegistration, validateLogin } = require('../middleware/validation');
 
 // @route   POST /api/users/register
 // @desc    Register a new user
@@ -26,6 +26,7 @@ router.post("/register", validateRegistration, async (req, res) => {
       address,
     });
 
+    // Save user to database
     const savedUser = await newUser.save();
 
     // Create JWT token
@@ -35,8 +36,8 @@ router.post("/register", validateRegistration, async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    // Respond with user data and token
-    res.status(201).json({
+    // Respond with token and user data
+    res.json({
       token,
       user: {
         id: savedUser._id,
@@ -55,25 +56,28 @@ router.post("/register", validateRegistration, async (req, res) => {
 // @route   POST /api/users/login
 // @desc    Authenticate user & get token
 // @access  Public
-router.post("/login", async (req, res) => {
+router.post('/login', validateLogin, async (req, res) => {
   const { email, password } = req.body;
-
-  // Basic validation
-  if (!email || !password) {
-    return res.status(400).json({ msg: "Please enter all fields" });
-  }
 
   try {
     // Check for existing user
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ msg: "Invalid credentials" });
+      return res.status(400).json({ 
+        msg: 'User does not exist',
+        field: 'email',
+        errorType: 'user_not_found'
+      });
     }
 
     // Validate password
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      return res.status(400).json({ msg: "Invalid credentials" });
+      return res.status(400).json({ 
+        msg: 'Invalid password',
+        field: 'password',
+        errorType: 'invalid_password'
+      });
     }
 
     // Create JWT token
@@ -82,6 +86,9 @@ router.post("/login", async (req, res) => {
       process.env.JWT_SECRET || "your_jwt_secret",
       { expiresIn: "1d" }
     );
+
+    // Log successful login
+    console.log(`User logged in: ${user.email} (${user.role})`);
 
     // Respond with user data and token
     res.json({
@@ -95,8 +102,8 @@ router.post("/login", async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Login error:", error);
-    res.status(500).json({ msg: "Server error" });
+    console.error('Login error:', error);
+    res.status(500).json({ msg: 'Server error', errorType: 'server_error' });
   }
 });
 
@@ -115,7 +122,6 @@ router.get("/profile", auth, async (req, res) => {
 
 // Route to update user profile
 router.put("/profile", auth, async (req, res) => {
-  // const user = req.user;
   let user = await User.findById(req.user.id);
   const { username, email, password, address } = req.body;
 

@@ -40,6 +40,39 @@ const validateRegistration = (req, res, next) => {
   next();
 };
 
+// Add login validation middleware
+const validateLogin = (req, res, next) => {
+  const { email, password } = req.body;
+  
+  // Check if email and password are provided
+  if (!email || !password) {
+    return res.status(400).json({ 
+      msg: 'Please enter all fields',
+      field: !email ? 'email' : 'password'
+    });
+  }
+  
+  // Basic email format validation
+  const emailRegex = /^\S+@\S+\.\S+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ 
+      msg: 'Please enter a valid email address',
+      field: 'email'
+    });
+  }
+  
+  // Password length validation
+  if (password.length < 6) {
+    return res.status(400).json({ 
+      msg: 'Password must be at least 6 characters',
+      field: 'password'
+    });
+  }
+  
+  next();
+};
+
 module.exports = {
-  validateRegistration
+  validateRegistration,
+  validateLogin
 }; 

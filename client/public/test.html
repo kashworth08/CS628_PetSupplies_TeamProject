@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>React Test</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div id="test-root"></div>
+
+  <script type="text/babel">
+    const TestApp = () => {
+      return (
+        <div style={{ padding: '20px', textAlign: 'center' }}>
+          <h1>Hello from Direct React!</h1>
+          <p>If you can see this, React is working correctly.</p>
+        </div>
+      );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('test-root'));
+    root.render(<TestApp />);
+  </script>
+</body>
+</html> 
