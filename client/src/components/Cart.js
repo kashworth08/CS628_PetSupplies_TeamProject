@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './Cart.css';
 
@@ -25,6 +25,7 @@ const Cart = () => {
   const { isAuthenticated, token } = useAuth();
   const sessionId = getSessionId();
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Force a refresh when component mounts
   useEffect(() => {
@@ -209,6 +210,16 @@ const Cart = () => {
     }, 0).toFixed(2);
   };
 
+  // Function to handle checkout button click
+  const handleCheckout = () => {
+    console.log("Checkout button clicked");
+    const path = isAuthenticated ? "/checkout" : "/login?redirect=checkout";
+    console.log("Navigating to:", path);
+    
+    // Use direct window location change instead of React Router navigation
+    window.location.href = path;
+  };
+
   if (loading) {
     return <div className="loading">Loading cart...</div>;
   }
@@ -284,12 +295,12 @@ const Cart = () => {
             Clear Cart
           </button>
           
-          <Link 
-            to={isAuthenticated ? "/checkout" : "/login?redirect=checkout"}
+          <button 
             className="checkout-button"
+            onClick={handleCheckout}
           >
             Proceed to Checkout
-          </Link>
+          </button>
           
           <Link to="/products" className="continue-shopping">
             Continue Shopping

@@ -5,7 +5,11 @@ const orderSchema = new mongoose.Schema({
   user: {
     type: String,
     ref: "User",
-    required: true
+    required: false // Not required for guest orders
+  },
+  sessionId: {
+    type: String,
+    required: false // Required for guest orders
   },
   items: [
     {
@@ -80,6 +84,14 @@ const orderSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   }
+});
+
+// Ensure either user or sessionId is provided
+orderSchema.pre('save', function(next) {
+  if (!this.user && !this.sessionId) {
+    return next(new Error('Either user or sessionId must be provided'));
+  }
+  next();
 });
 
 module.exports = mongoose.model("Order", orderSchema);

@@ -7,17 +7,8 @@ import './Checkout.css';
 
 // Initialize Stripe with your publishable key from environment variables
 const stripeKey = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY;
+console.log("Stripe key available:", !!stripeKey, "Key value:", stripeKey);
 const stripePromise = stripeKey ? loadStripe(stripeKey) : null;
-
-// Display an error if Stripe key is missing
-const StripeError = () => (
-  <div className="checkout-container">
-    <div className="error-message">
-      <h2>Configuration Error</h2>
-      <p>Stripe API key is missing. Please check your environment configuration.</p>
-    </div>
-  </div>
-);
 
 const CheckoutForm = () => {
   const [cart, setCart] = useState(null);
@@ -33,18 +24,30 @@ const CheckoutForm = () => {
     postalCode: '',
     country: 'US'
   });
+  const [cardError, setCardError] = useState('');
   const { isAuthenticated, token, user } = useAuth();
   const navigate = useNavigate();
   const stripe = useStripe();
   const elements = useElements();
+  const sessionId = localStorage.getItem('sessionId');
 
+  // Function to fetch the user's cart
   const fetchCart = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:5000/api/cart', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+      console.log('Fetching cart for checkout...');
+      
+      const headers = {
+        'X-Session-Id': sessionId
+      };
+      
+      if (isAuthenticated && token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/cart`, {
+        headers,
+        cache: 'no-store'
       });
       
       if (!response.ok) {
@@ -52,8 +55,10 @@ const CheckoutForm = () => {
       }
       
       const data = await response.json();
+      console.log('Cart data received:', data);
       
       if (!data.items || data.items.length === 0) {
+        console.log('Cart is empty, redirecting to cart page');
         navigate('/cart');
         return;
       }
@@ -65,22 +70,26 @@ const CheckoutForm = () => {
       setError('Failed to load your cart. Please try again later.');
       setLoading(false);
     }
-  }, [token, navigate]);
+  }, [token, navigate, isAuthenticated, sessionId]);
 
+  // Initialize checkout when component mounts
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login');
-      return;
-    }
+    console.log('Checkout component mounted');
     
-    // Pre-fill name if available
-    if (user && user.name) {
-      setShippingInfo(prev => ({ ...prev, fullName: user.name }));
+    // Pre-fill shipping info if user is authenticated
+    if (isAuthenticated && user) {
+      console.log('Pre-filling shipping info with user data');
+      setShippingInfo(prev => ({ 
+        ...prev, 
+        fullName: user.username || '',
+        address: user.address || ''
+      }));
     }
     
     fetchCart();
-  }, [isAuthenticated, navigate, user, fetchCart]);
+  }, [isAuthenticated, user, fetchCart]);
 
+  // Handle changes to shipping form fields
   const handleShippingChange = (e) => {
     const { name, value } = e.target;
     setShippingInfo(prev => ({
@@ -89,6 +98,7 @@ const CheckoutForm = () => {
     }));
   };
 
+  // Calculate the total price of items in the cart
   const calculateTotal = () => {
     if (!cart || !cart.items || cart.items.length === 0) return 0;
     
@@ -97,11 +107,18 @@ const CheckoutForm = () => {
     }, 0).toFixed(2);
   };
 
+  // Handle card element changes
+  const handleCardChange = (event) => {
+    setCardError(event.error ? event.error.message : '');
+  };
+
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!stripe || !elements) {
       // Stripe.js has not loaded yet
+      setError('Payment processing is not available. Please try again later.');
       return;
     }
     
@@ -113,16 +130,24 @@ const CheckoutForm = () => {
       }
     }
     
+    // Validate card details
+    if (cardError) {
+      setError(cardError);
+      return;
+    }
+    
     setProcessing(true);
     setError(null);
     
     try {
+      console.log('Creating payment intent...');
       // Create payment intent on the server
-      const response = await fetch('http://localhost:5000/api/payments/create-payment-intent', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/payments/create-payment-intent`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': isAuthenticated && token ? `Bearer ${token}` : '',
+          'X-Session-Id': sessionId
         },
         body: JSON.stringify({
           amount: Math.round(parseFloat(calculateTotal()) * 100), // Convert to cents for Stripe
@@ -132,34 +157,48 @@ const CheckoutForm = () => {
       });
       
       if (!response.ok) {
+        const errorData = await response.text();
+        console.error('Payment intent creation failed:', errorData);
         throw new Error('Failed to create payment intent');
       }
       
       const data = await response.json();
+      console.log('Payment intent created successfully');
       
       // Confirm card payment
+      console.log('Confirming card payment...');
       const { error, paymentIntent } = await stripe.confirmCardPayment(data.clientSecret, {
         payment_method: {
           card: elements.getElement(CardElement),
           billing_details: {
-            name: shippingInfo.fullName
+            name: shippingInfo.fullName,
+            address: {
+              line1: shippingInfo.address,
+              city: shippingInfo.city,
+              state: shippingInfo.state,
+              postal_code: shippingInfo.postalCode,
+              country: shippingInfo.country
+            }
           }
         }
       });
       
       if (error) {
+        console.error('Payment confirmation failed:', error);
         setError(`Payment failed: ${error.message}`);
         setProcessing(false);
         return;
       }
       
       if (paymentIntent.status === 'succeeded') {
+        console.log('Payment succeeded, creating order...');
         // Create order
-        const orderResponse = await fetch('http://localhost:5000/api/orders', {
+        const orderResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/orders`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            'Authorization': isAuthenticated && token ? `Bearer ${token}` : '',
+            'X-Session-Id': sessionId
           },
           body: JSON.stringify({
             items: cart.items.map(item => ({
@@ -178,14 +217,18 @@ const CheckoutForm = () => {
         });
         
         if (!orderResponse.ok) {
+          const orderError = await orderResponse.text();
+          console.error('Order creation failed:', orderError);
           throw new Error('Failed to create order');
         }
         
+        console.log('Order created successfully, clearing cart...');
         // Clear cart
-        await fetch('http://localhost:5000/api/cart', {
+        await fetch(`${process.env.REACT_APP_API_URL}/api/cart`, {
           method: 'DELETE',
           headers: {
-            'Authorization': `Bearer ${token}`
+            'Authorization': isAuthenticated && token ? `Bearer ${token}` : '',
+            'X-Session-Id': sessionId
           }
         });
         
@@ -331,6 +374,9 @@ const CheckoutForm = () => {
                   <option value="CA">Canada</option>
                   <option value="UK">United Kingdom</option>
                   <option value="AU">Australia</option>
+                  <option value="DE">Germany</option>
+                  <option value="FR">France</option>
+                  <option value="JP">Japan</option>
                 </select>
               </div>
             </div>
@@ -354,8 +400,10 @@ const CheckoutForm = () => {
                     },
                   },
                 }}
+                onChange={handleCardChange}
               />
             </div>
+            {cardError && <div className="card-error">{cardError}</div>}
           </div>
           
           <div className="checkout-actions">
@@ -386,16 +434,62 @@ const CheckoutForm = () => {
 
 // Main Checkout component
 const Checkout = () => {
+  console.log("Checkout component rendering, stripePromise:", !!stripePromise);
+  const [stripeError, setStripeError] = useState(false);
+  
+  useEffect(() => {
+    // Check if Stripe is available
+    if (!stripePromise) {
+      console.error("Stripe key is missing or invalid!");
+      setStripeError(true);
+    }
+  }, []);
+  
   // If Stripe key is missing, show error
-  if (!stripePromise) {
-    return <StripeError />;
+  if (stripeError || !stripePromise) {
+    console.error("Showing Stripe error UI");
+    return (
+      <div className="checkout-container">
+        <div className="error-message">
+          <h2>Payment Processing Unavailable</h2>
+          <p>We're currently unable to process payments. This could be due to a configuration issue or a temporary outage.</p>
+          <p>Please try again later or contact customer support for assistance.</p>
+          <button 
+            className="back-button" 
+            onClick={() => window.history.back()}
+            style={{ marginTop: '20px' }}
+          >
+            Back to Cart
+          </button>
+        </div>
+      </div>
+    );
   }
 
-  return (
-    <Elements stripe={stripePromise}>
-      <CheckoutForm />
-    </Elements>
-  );
+  try {
+    return (
+      <Elements stripe={stripePromise}>
+        <CheckoutForm />
+      </Elements>
+    );
+  } catch (error) {
+    console.error("Error rendering Stripe Elements:", error);
+    return (
+      <div className="checkout-container">
+        <div className="error-message">
+          <h2>Payment Processing Error</h2>
+          <p>An error occurred while setting up the payment form. Please try again later.</p>
+          <button 
+            className="back-button" 
+            onClick={() => window.history.back()}
+            style={{ marginTop: '20px' }}
+          >
+            Back to Cart
+          </button>
+        </div>
+      </div>
+    );
+  }
 };
 
 export default Checkout; 

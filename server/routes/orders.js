@@ -3,15 +3,35 @@ const router = express.Router();
 const Order = require('../models/Order');
 const { auth, admin } = require('../middleware/auth');
 
+// Middleware to handle both authenticated and guest users
+const optionalAuth = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    // If there's an auth header, use the auth middleware
+    return auth(req, res, next);
+  } else {
+    // Otherwise, just continue without authentication
+    next();
+  }
+};
+
 // @route   POST /api/orders
 // @desc    Create a new order
-// @access  Private
-router.post('/', auth, async (req, res) => {
+// @access  Public (with session tracking)
+router.post('/', optionalAuth, async (req, res) => {
   try {
     const { items, shippingAddress, paymentInfo, totalAmount } = req.body;
+    const sessionId = req.headers['x-session-id'];
     
+    if (!sessionId) {
+      return res.status(400).json({ msg: 'Session ID is required' });
+    }
+    
+    // Create a new order
     const newOrder = new Order({
-      user: req.user._id,
+      user: req.user ? req.user._id : null,
+      sessionId: !req.user ? sessionId : null,
       items,
       shippingAddress,
       paymentInfo,
@@ -19,11 +39,12 @@ router.post('/', auth, async (req, res) => {
     });
     
     const savedOrder = await newOrder.save();
+    console.log(`Order created: ${savedOrder._id}`);
     
     res.status(201).json(savedOrder);
   } catch (error) {
     console.error('Create order error:', error);
-    res.status(500).json({ msg: 'Server error' });
+    res.status(500).json({ msg: 'Server error', error: error.message });
   }
 });
 
@@ -42,10 +63,31 @@ router.get('/me', auth, async (req, res) => {
   }
 });
 
+// @route   GET /api/orders/session
+// @desc    Get all orders for the current session
+// @access  Public (with session tracking)
+router.get('/session', async (req, res) => {
+  try {
+    const sessionId = req.headers['x-session-id'];
+    
+    if (!sessionId) {
+      return res.status(400).json({ msg: 'Session ID is required' });
+    }
+    
+    const orders = await Order.find({ sessionId })
+      .sort({ createdAt: -1 });
+    
+    res.json(orders);
+  } catch (error) {
+    console.error('Get session orders error:', error);
+    res.status(500).json({ msg: 'Server error' });
+  }
+});
+
 // @route   GET /api/orders/:id
 // @desc    Get order by ID
-// @access  Private
-router.get('/:id', auth, async (req, res) => {
+// @access  Public (with authorization check)
+router.get('/:id', optionalAuth, async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
     
@@ -53,12 +95,18 @@ router.get('/:id', auth, async (req, res) => {
       return res.status(404).json({ msg: 'Order not found' });
     }
     
-    // Check if the order belongs to the user or if the user is an admin
-    if (order.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
-      return res.status(403).json({ msg: 'Not authorized' });
+    const sessionId = req.headers['x-session-id'];
+    
+    // Check if the order belongs to the user, session, or if the user is an admin
+    if (
+      (req.user && order.user && order.user.toString() === req.user._id.toString()) ||
+      (req.user && req.user.role === 'admin') ||
+      (sessionId && order.sessionId === sessionId)
+    ) {
+      return res.json(order);
     }
     
-    res.json(order);
+    return res.status(403).json({ msg: 'Not authorized' });
   } catch (error) {
     console.error('Get order error:', error);
     if (error.kind === 'ObjectId') {

@@ -175,6 +175,11 @@
   cursor: not-allowed;
 }
 
+.pay-button:disabled:not([data-processing="false"]) {
+  background-color: #4a90e2;
+  animation: pulse 1.5s infinite;
+}
+
 .error-message {
   background-color: #ffebee;
   color: #c62828;
@@ -194,6 +199,7 @@
 .checkout-container.success {
   text-align: center;
   padding: 40px 20px;
+  animation: fadeIn 0.5s ease-out;
 }
 
 .checkout-container.success h2 {
@@ -201,10 +207,54 @@
   margin-bottom: 15px;
 }
 
+.card-error {
+  color: #c62828;
+  font-size: 14px;
+  margin-top: 10px;
+  padding: 5px 0;
+}
+
+/* Improve form focus states */
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+/* Add a loading animation for the processing state */
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Add a success animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Responsive styles */
 @media (max-width: 768px) {
   .checkout-content {
     grid-template-columns: 1fr;
+  }
+  
+  .order-summary {
+    margin-bottom: 30px;
   }
   
   .form-row {
