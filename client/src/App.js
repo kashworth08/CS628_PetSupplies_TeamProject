@@ -199,11 +199,7 @@ function App() {
               
               <Route 
                 path="/cart" 
-                element={
-                  <ProtectedRoute>
-                    <Cart />
-                  </ProtectedRoute>
-                } 
+                element={<Cart />} 
               />
               
               <Route 

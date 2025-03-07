@@ -40,9 +40,18 @@ const Login = () => {
         console.log('Login: Admin attempt but user is not admin, redirecting to unauthorized');
         navigate('/unauthorized');
       } else {
-        const from = location.state?.from?.pathname || '/';
-        console.log(`Login: Redirecting to ${from}`);
-        navigate(from);
+        // Check for redirect parameter
+        const params = new URLSearchParams(location.search);
+        const redirectTo = params.get('redirect');
+        
+        // Determine where to redirect
+        let redirectPath = location.state?.from?.pathname || '/';
+        if (redirectTo === 'checkout') {
+          redirectPath = '/checkout';
+        }
+        
+        console.log(`Login: Redirecting to ${redirectPath}`);
+        navigate(redirectPath);
       }
     } else {
       console.log('Login: User is not authenticated, no redirect needed');

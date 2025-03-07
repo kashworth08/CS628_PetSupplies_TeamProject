@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const productSchema = new mongoose.Schema({
   Name: { type: String, required: true },
   Description: String,
+  ImageURL: { type: String, default: "https://via.placeholder.com/150" },
   CategoryID: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Category",
