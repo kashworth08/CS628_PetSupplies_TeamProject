@@ -1,54 +1,165 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import "./Products.css";
 
-const productList = [
-  { id: 1, name: "Chew Toy", image: "https://images.unsplash.com/photo-1522008693277-086ad6075b78?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8ZG9nJTIwY2hldyUyMHRveXxlbnwwfHwwfHx8MA%3D%3D", description: "Durable chew toy.", price: 9.99, pet: "Dog", category: "Toy", rating: 4.5 },
-  { id: 2, name: "Scratching Post", image: "https://images.unsplash.com/photo-1636543459635-c9756f9aef79?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8c2NyYXRjaGluZyUyMHBvc3R8ZW58MHx8MHx8fDA%3D", description: "Sturdy scratching post.", price: 24.99, pet: "Cat", category: "Toy", rating: 4.2 },
-  { id: 3, name: "Bite-proof Leash", image: "https://images.unsplash.com/photo-1625734062403-428e52d753fe?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fGxlYXNofGVufDB8fDB8fHww", description: "Durable dog leash.", price: 15.49, pet: "Dog", category: "Leashes & Collars", rating: 4.8 },
-  { id: 4, name: "Cat Food", image: "https://plus.unsplash.com/premium_photo-1726761692986-6bcde87fc2b8?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Y2F0JTIwZm9vZHxlbnwwfHwwfHx8MA%3D%3D", description: "Nutritious cat food.", price: 19.99, pet: "Cat", category: "Food", rating: 4.7 },
-  { id: 5, name: "Dog Food", image: "https://images.unsplash.com/photo-1589924691995-400dc9ecc119?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8ZG9nJTIwZm9vZHxlbnwwfHwwfHx8MA%3D%3D", description: "Healthy dog food.", price: 22.99, pet: "Dog", category: "Food", rating: 4.9 },
-  { id: 6, name: "Pet Collar", image: "https://images.unsplash.com/photo-1605639496822-eddf63ad6c8f?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8ZG9nJTIwY29sbGFyfGVufDB8fDB8fHww", description: "Stylish pet collar.", price: 10.99, pet: "Dog", category: "Leashes & Collars", rating: 4.1 },
-  { id: 7, name: "Cat Bed", image: "https://images.unsplash.com/photo-1573682127988-f67136e7f12a?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8Y2F0JTIwYmVkfGVufDB8fDB8fHww", description: "Soft and cozy bed.", price: 29.99, pet: "Cat", category: "Furniture", rating: 4.3 },
-  { id: 8, name: "Kong", image: "https://images.unsplash.com/photo-1535294435445-d7249524ef2e?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8ZG9nJTIwdG95fGVufDB8fDB8fHww", description: "Red Kong", price: 10.99, pet: "Dog", category: "Toy", rating: 4.6 },
-  { id: 9, name: "Freeze-dried Chicken Treats", image: "https://images.unsplash.com/photo-1571873735645-1ae72b963024?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8cGV0JTIwZm9vZHxlbnwwfHwwfHx8MA%3D%3D", description: "Healthy snack for dogs", price: 9.99, pet: "Dog", category: "Food", rating: 4.4 },
-];
-
-const petTypes = ["All", "Dog", "Cat"];
-const categories = ["All", "Food", "Toy", "Leashes & Collars", "Furniture"];
+// Helper function to get or create a session ID (same as in Cart.js)
+const getSessionId = () => {
+  let sessionId = localStorage.getItem('sessionId');
+  if (!sessionId) {
+    sessionId = 'sess_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    localStorage.setItem('sessionId', sessionId);
+  }
+  return sessionId;
+};
 
 function Products() {
-  const [selectedPet, setSelectedPet] = useState("All");
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
-  const [cart, setCart] = useState([]);
+  const [addingToCart, setAddingToCart] = useState({});
+  const [notification, setNotification] = useState(null);
+  
+  const { isAuthenticated, token } = useAuth();
+  const navigate = useNavigate();
+  const sessionId = getSessionId();
 
-  const filteredProducts = productList
-    .filter((product) =>
-      (selectedPet === "All" || product.pet === selectedPet) &&
-      (selectedCategory === "All" || product.category === selectedCategory) &&
-      product.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+  // Fetch products from the backend
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/products`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch products');
+        }
+        
+        const data = await response.json();
+        setProducts(data);
+        
+        // Extract unique categories
+        const uniqueCategories = ['All', ...new Set(data.map(product => product.CategoryID?.Name).filter(Boolean))];
+        setCategories(uniqueCategories);
+        
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        setError('Failed to load products. Please try again later.');
+        setLoading(false);
+      }
+    };
+    
+    fetchProducts();
+  }, []);
 
-  const addToCart = (product) => {
-    setCart([...cart, product]);
+  // Filter products based on category and search query
+  const filteredProducts = products.filter((product) =>
+    (selectedCategory === "All" || product.CategoryID?.Name === selectedCategory) &&
+    (product.Name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+     product.Description.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
+  // Add product to cart
+  const addToCart = async (product, navigateToCart = false) => {
+    try {
+      // Prevent multiple clicks
+      if (addingToCart[product._id]) {
+        return;
+      }
+      
+      setAddingToCart(prev => ({ ...prev, [product._id]: true }));
+      
+      const headers = {
+        'Content-Type': 'application/json',
+        'X-Session-Id': sessionId
+      };
+      
+      if (isAuthenticated && token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      console.log('Adding product to cart:', product._id);
+      console.log('Headers:', headers);
+      
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/cart`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          productId: product._id,
+          quantity: 1
+        })
+      });
+      
+      console.log('Add to cart response status:', response.status);
+      
+      if (!response.ok) {
+        throw new Error('Failed to add item to cart');
+      }
+      
+      // Show success notification
+      setNotification({
+        message: `${product.Name} added to cart!`,
+        type: 'success'
+      });
+      
+      // Hide notification after 3 seconds
+      setTimeout(() => {
+        setNotification(null);
+      }, 3000);
+      
+      // Navigate to cart if requested
+      if (navigateToCart) {
+        goToCart();
+      }
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      
+      // Show error notification
+      setNotification({
+        message: 'Failed to add item to cart. Please try again.',
+        type: 'error'
+      });
+      
+      // Hide notification after 3 seconds
+      setTimeout(() => {
+        setNotification(null);
+      }, 3000);
+    } finally {
+      // Reset adding state after a short delay to prevent rapid clicks
+      setTimeout(() => {
+        setAddingToCart(prev => ({ ...prev, [product._id]: false }));
+      }, 1000);
+    }
   };
+
+  // Navigate to cart
+  const goToCart = () => {
+    // Navigate to cart with a timestamp parameter to force a refresh
+    navigate(`/cart?t=${Date.now()}`);
+  };
+
+  if (loading) {
+    return <div className="loading">Loading products...</div>;
+  }
+
+  if (error) {
+    return <div className="error-message">{error}</div>;
+  }
 
   return (
     <div className="products-container">
       <h1>Our Products</h1>
 
       <div className="filters">
-        <label>Filter by Pet:</label>
-        <select onChange={(e) => setSelectedPet(e.target.value)} value={selectedPet}>
-          {petTypes.map((type) => (
-            <option key={type} value={type}>
-              {type}
-            </option>
-          ))}
-        </select>
-
         <label>Filter by Category:</label>
-        <select onChange={(e) => setSelectedCategory(e.target.value)} value={selectedCategory}>
+        <select 
+          onChange={(e) => setSelectedCategory(e.target.value)} 
+          value={selectedCategory}
+        >
           {categories.map((category) => (
             <option key={category} value={category}>
               {category}
@@ -63,19 +174,44 @@ function Products() {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
+        
+        <button className="view-cart-btn" onClick={goToCart}>
+          View Cart
+        </button>
       </div>
+
+      {notification && (
+        <div className={`notification ${notification.type}`}>
+          {notification.message}
+        </div>
+      )}
 
       <div className="products-grid">
         {filteredProducts.length > 0 ? (
           filteredProducts.map((product) => (
-            <div key={product.id} className="product-card">
-              <img src={product.image} alt={product.name} className="product-image" />
-              <h3>{product.name}</h3>
-              <p>{product.description}</p>
-              <p className="product-price">${product.price.toFixed(2)}</p>
-              <p>Rating: {product.rating} &#9733;</p>
-              <button className="add-to-cart-btn" onClick={() => addToCart(product)}>
-                Add to Cart
+            <div key={product._id} className="product-card">
+              <img 
+                src={product.ImageURL || 'https://via.placeholder.com/150'} 
+                alt={product.Name} 
+                className="product-image" 
+              />
+              <h3>{product.Name}</h3>
+              <p>{product.Description}</p>
+              <p className="product-price">${product.Price.toFixed(2)}</p>
+              <p className="product-stock">In Stock: {product.Stock}</p>
+              <button 
+                className="add-to-cart-btn" 
+                onClick={() => addToCart(product)}
+                disabled={addingToCart[product._id] || product.Stock <= 0}
+              >
+                {addingToCart[product._id] ? 'Adding...' : product.Stock <= 0 ? 'Out of Stock' : 'Add to Cart'}
+              </button>
+              <button 
+                className="add-and-view-cart-btn" 
+                onClick={() => addToCart(product, true)}
+                disabled={addingToCart[product._id] || product.Stock <= 0}
+              >
+                Add & View Cart
               </button>
             </div>
           ))

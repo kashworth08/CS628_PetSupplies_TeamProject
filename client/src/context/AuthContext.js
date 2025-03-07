@@ -97,6 +97,23 @@ export const AuthProvider = ({ children }) => {
       setUser(user);
       setIsAuthenticated(true);
       
+      // Merge carts after login
+      try {
+        const sessionId = localStorage.getItem('sessionId');
+        if (sessionId) {
+          await axios.post(`${process.env.REACT_APP_API_URL}/api/cart/merge`, {}, {
+            headers: {
+              'Authorization': `Bearer ${newToken}`,
+              'X-Session-Id': sessionId
+            }
+          });
+          console.log('AuthContext: carts merged successfully');
+        }
+      } catch (mergeError) {
+        console.error('AuthContext: Error merging carts:', mergeError);
+        // Continue with login even if cart merge fails
+      }
+      
       console.log('AuthContext: login successful, user authenticated');
       return true;
     } catch (err) {

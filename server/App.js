@@ -29,11 +29,13 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000",
+      "http://localhost:3002",
       "https://cs628-petsupplies-teamproject.onrender.com",
       "*",
     ], // Added '*' for File 2 and existing origins
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Session-Id"],
+    exposedHeaders: ["X-Session-Id"],
     credentials: true, // Keep credentials: true from file 1
   })
 );
