@@ -10,7 +10,7 @@ const TestAuth = () => {
     // Test basic API connectivity
     const testApi = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api-test');
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api-test`);
         setApiStatus(`API is working: ${response.data.message}`);
       } catch (error) {
         setApiStatus(`API error: ${error.message}`);
@@ -23,20 +23,20 @@ const TestAuth = () => {
   const testAuth = async () => {
     try {
       setAuthStatus('Testing...');
-      const response = await axios.get('http://localhost:5000/api/users/me', {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/users/me`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
-      setAuthStatus(`Auth success: ${JSON.stringify(response.data)}`);
+      setAuthStatus(`Auth successful! User: ${response.data.email} (${response.data.role})`);
     } catch (error) {
-      setAuthStatus(`Auth error: ${error.response?.data?.msg || error.message}`);
+      setAuthStatus(`Auth failed: ${error.response?.data?.msg || error.message}`);
     }
   };
 
   return (
     <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
-      <h1>API Test Component</h1>
+      <h1>Authentication Test</h1>
       
       <div style={{ marginBottom: '20px' }}>
         <h2>API Status</h2>
@@ -45,16 +45,17 @@ const TestAuth = () => {
       
       <div style={{ marginBottom: '20px' }}>
         <h2>Auth Test</h2>
+        <p>Enter a JWT token to test authentication:</p>
         <input 
           type="text" 
           value={token} 
           onChange={(e) => setToken(e.target.value)} 
-          placeholder="Enter JWT token"
           style={{ width: '100%', padding: '8px', marginBottom: '10px' }}
+          placeholder="JWT token"
         />
         <button 
           onClick={testAuth}
-          style={{ padding: '8px 16px', background: '#4CAF50', color: 'white', border: 'none', cursor: 'pointer' }}
+          style={{ padding: '8px 16px', backgroundColor: '#4CAF50', color: 'white', border: 'none', cursor: 'pointer' }}
         >
           Test Authentication
         </button>
@@ -62,9 +63,8 @@ const TestAuth = () => {
       </div>
       
       <div>
-        <h2>Debug Info</h2>
-        <p>React Router DOM version: 6.22.0</p>
-        <p>React version: 18.2.0</p>
+        <h2>Environment</h2>
+        <p>API URL: {process.env.REACT_APP_API_URL || 'Not set'}</p>
       </div>
     </div>
   );

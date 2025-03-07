@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState, useRef, useEffect } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -31,6 +31,26 @@ const { ProtectedRoute, AdminRoute } = ProtectedRoutes;
 // Navigation component with conditional rendering based on auth state
 const Navigation = () => {
   const { isAuthenticated, isAdmin, logout, user } = useContext(AuthContext);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef(null);
+
+  const toggleDropdown = () => {
+    setShowDropdown(!showDropdown);
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   return (
     <nav>
@@ -83,42 +103,24 @@ const Navigation = () => {
           </li>
         )}
         {isAuthenticated && (
-<<<<<<< HEAD
           <>
             <li>
-              <Link to="/profile">Profile</Link>
+              <NavLink
+                className={({ isActive }) => (isActive ? "active-link" : "")}
+                to="/profile"
+              >
+                Profile
+              </NavLink>
             </li>
             <li>
-              <Link to="/cart">Cart</Link>
+              <NavLink
+                className={({ isActive }) => (isActive ? "active-link" : "")}
+                to="/cart"
+              >
+                Cart
+              </NavLink>
             </li>
           </>
-=======
-          <li>
-            <NavLink
-              className={({ isActive }) => (isActive ? "active-link" : "")}
-              to="/profile"
-            >
-              Profile
-            </NavLink>
-          </li>
->>>>>>> origin/main
-        )}
-        {isAuthenticated && isAdmin() && (
-          <li>
-            <NavLink
-              className={({ isActive }) =>
-                isActive ? "active-link admin-link" : "admin-link"
-              }
-              to="/admin"
-            >
-              Admin Dashboard
-            </NavLink>
-          </li>
-        )}
-        {!isAuthenticated && (
-          <li>
-            <Link to="/login?admin=true" className="admin-login-link">Admin Login</Link>
-          </li>
         )}
       </ul>
 
@@ -126,15 +128,28 @@ const Navigation = () => {
       <div className="auth-section">
         {isAuthenticated ? (
           <div className="nav-user">
-<<<<<<< HEAD
-            <span>Welcome, {user?.username} {isAdmin() && <small>(Admin)</small>}</span>
-            <button onClick={logout} className="logout-button">Logout</button>
-=======
-            <span>Welcome, {user?.username}</span>
+            {isAdmin() ? (
+              <div className="user-dropdown" ref={dropdownRef}>
+                <span onClick={toggleDropdown} className="dropdown-trigger">
+                  Welcome, {user?.username} <small>(Admin)</small> ▼
+                </span>
+                {showDropdown && (
+                  <div className="dropdown-menu">
+                    <Link to="/admin" className="dropdown-item admin-link">
+                      Admin Dashboard
+                    </Link>
+                    <Link to="/profile" className="dropdown-item">
+                      My Profile
+                    </Link>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <span>Welcome, {user?.username}</span>
+            )}
             <button onClick={logout} className="logout-button">
               Logout
             </button>
->>>>>>> origin/main
           </div>
         ) : (
           <div className="auth-buttons">
@@ -170,22 +185,17 @@ function App() {
               <Route path="/register" element={<Register />} />
               <Route path="/guest" element={<Guest />} />
               <Route path="/unauthorized" element={<Unauthorized />} />
-<<<<<<< HEAD
               <Route path="/test-auth" element={<TestAuth />} />
               
-=======
-
->>>>>>> origin/main
               {/* Protected routes */}
-              <Route
-                path="/profile"
+              <Route 
+                path="/profile" 
                 element={
                   <ProtectedRoute>
                     <Profile />
                   </ProtectedRoute>
-                }
+                } 
               />
-<<<<<<< HEAD
               
               <Route 
                 path="/cart" 
@@ -214,19 +224,16 @@ function App() {
                 } 
               />
               
-=======
-
->>>>>>> origin/main
               {/* Admin routes */}
-              <Route
-                path="/admin"
+              <Route 
+                path="/admin" 
                 element={
                   <AdminRoute>
                     <AdminDashboard />
                   </AdminRoute>
-                }
+                } 
               />
-
+              
               <Route path="*" element={<h1>Page Not Found</h1>} />
             </Routes>
           </div>

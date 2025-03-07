@@ -10,20 +10,12 @@ const Login = () => {
   });
   const [formErrors, setFormErrors] = useState({});
   const [isAdminAttempt, setIsAdminAttempt] = useState(false);
-  const [testMessage, setTestMessage] = useState('');
   
   const { login, error, isAuthenticated, isAdmin } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
   
   const { email, password } = formData;
-  
-  // Simple test function to check if JavaScript events are working
-  const testClick = () => {
-    console.log('Test button clicked!');
-    setTestMessage('Test button works! JavaScript events are functioning.');
-    alert('Test button clicked!');
-  };
 
   // Check if user is trying to access admin route
   useEffect(() => {
@@ -117,26 +109,6 @@ const Login = () => {
   return (
     <div className="login-container">
       <h2>{isAdminAttempt ? 'Admin Login' : 'Login'}</h2>
-      
-      {/* Test button to check if JavaScript events are working */}
-      <div className="test-section">
-        <button 
-          type="button" 
-          onClick={testClick} 
-          style={{ 
-            padding: '10px', 
-            margin: '10px 0', 
-            backgroundColor: '#6c757d', 
-            color: 'white', 
-            border: 'none', 
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
-        >
-          Test JavaScript Events
-        </button>
-        {testMessage && <p style={{ color: 'green' }}>{testMessage}</p>}
-      </div>
       
       {error && <div className="error-message">{error}</div>}
       

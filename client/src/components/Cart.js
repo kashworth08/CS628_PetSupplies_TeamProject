@@ -13,7 +13,7 @@ const Cart = () => {
   const fetchCart = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:5000/api/cart', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/cart`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -44,7 +44,7 @@ const Cart = () => {
 
   const updateQuantity = async (productId, quantity) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/cart/${productId}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/cart/${productId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -57,17 +57,16 @@ const Cart = () => {
         throw new Error('Failed to update cart');
       }
       
-      const data = await response.json();
-      setCart(data);
+      fetchCart();
     } catch (error) {
       console.error('Error updating cart:', error);
-      setError('Failed to update your cart. Please try again later.');
+      setError('Failed to update cart. Please try again later.');
     }
   };
 
   const removeItem = async (productId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/cart/${productId}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/cart/${productId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -78,17 +77,16 @@ const Cart = () => {
         throw new Error('Failed to remove item from cart');
       }
       
-      const data = await response.json();
-      setCart(data);
+      fetchCart();
     } catch (error) {
       console.error('Error removing item from cart:', error);
-      setError('Failed to remove item from your cart. Please try again later.');
+      setError('Failed to remove item from cart. Please try again later.');
     }
   };
 
   const clearCart = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/cart', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/cart/clear`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -99,10 +97,10 @@ const Cart = () => {
         throw new Error('Failed to clear cart');
       }
       
-      setCart({ items: [] });
+      fetchCart();
     } catch (error) {
       console.error('Error clearing cart:', error);
-      setError('Failed to clear your cart. Please try again later.');
+      setError('Failed to clear cart. Please try again later.');
     }
   };
 

@@ -6,7 +6,18 @@ import { Elements, CardElement, useStripe, useElements } from '@stripe/react-str
 import './Checkout.css';
 
 // Initialize Stripe with your publishable key from environment variables
-const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
+const stripeKey = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY;
+const stripePromise = stripeKey ? loadStripe(stripeKey) : null;
+
+// Display an error if Stripe key is missing
+const StripeError = () => (
+  <div className="checkout-container">
+    <div className="error-message">
+      <h2>Configuration Error</h2>
+      <p>Stripe API key is missing. Please check your environment configuration.</p>
+    </div>
+  </div>
+);
 
 const CheckoutForm = () => {
   const [cart, setCart] = useState(null);
@@ -373,7 +384,13 @@ const CheckoutForm = () => {
   );
 };
 
+// Main Checkout component
 const Checkout = () => {
+  // If Stripe key is missing, show error
+  if (!stripePromise) {
+    return <StripeError />;
+  }
+
   return (
     <Elements stripe={stripePromise}>
       <CheckoutForm />
