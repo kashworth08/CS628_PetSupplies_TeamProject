@@ -28,12 +28,12 @@ JWT_SECRET=<paste-the-generated-string-here>
 ```
 ## Run Migration for Database
 ```bash
-node run-migration.js
+npm run migration
 ```
 
-## Seed Admin Users
+## Seed Mock Users, Categories, Products, Reviews, and Orders
 ```bash
-node seedAdmins.js
+npm run seed
 ```
 
 ## Run Local Developement (Server Side)
