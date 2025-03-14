@@ -85,12 +85,15 @@ function Products() {
       console.log('Adding product to cart:', product._id);
       console.log('Headers:', headers);
       
+      // Send a single request to add the item with quantity 1
+      // The server will handle incrementing if the item already exists
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/cart`, {
         method: 'POST',
         headers,
         body: JSON.stringify({
           productId: product._id,
-          quantity: 1
+          quantity: 1,
+          increment: true // Tell the server to increment the quantity if the item exists
         })
       });
       

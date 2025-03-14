@@ -270,4 +270,25 @@
   .back-button, .pay-button {
     width: 100%;
   }
+}
+
+.demo-button {
+  background-color: #ff9800;
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.demo-button:hover {
+  background-color: #f57c00;
+}
+
+.demo-button:disabled {
+  background-color: #ffcc80;
+  cursor: not-allowed;
 } 

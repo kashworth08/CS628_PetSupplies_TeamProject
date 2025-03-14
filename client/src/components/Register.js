@@ -7,13 +7,14 @@ const Register = () => {
     username: '',
     email: '',
     password: '',
+    confirmPassword: '',
     address: '',
   });
 
   const [errors, setErrors] = useState({});
   const [success, setSuccess] = useState('');
 
-  const { username, email, password, address } = formData;
+  const { username, email, password, confirmPassword, address } = formData;
 
   const handleChange = e => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -31,8 +32,18 @@ const Register = () => {
       newErrors.email = 'Please enter a valid email';
     }
 
-    if (!password || password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+    // Password validation - at least 8 characters, one uppercase letter, and one special character
+    const passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.{8,})/;
+    if (!password) {
+      newErrors.password = 'Password is required';
+    } else if (!passwordRegex.test(password)) {
+      newErrors.password = 'Password must be at least 8 characters with one uppercase letter and one special character';
+    }
+
+    if (!confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your password';
+    } else if (password !== confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
     }
 
     if (!address) {
@@ -52,18 +63,26 @@ const Register = () => {
     }
 
     try {
-      await axios.post('http://localhost:5000/api/users/register', formData);
+      // Remove confirmPassword before sending to API
+      const { confirmPassword, ...registrationData } = formData;
+      await axios.post('http://localhost:5000/api/users/register', registrationData);
       setSuccess('Registration successful!');
       setFormData({
         username: '',
         email: '',
         password: '',
+        confirmPassword: '',
         address: '',
       });
       setErrors({});
     } catch (error) {
       if (error.response && error.response.data) {
-        setErrors({ apiError: error.response.data.msg });
+        if (error.response.data.errors) {
+          // Handle array of errors from server
+          setErrors({ apiError: error.response.data.errors.join(', ') });
+        } else {
+          setErrors({ apiError: error.response.data.msg });
+        }
       } else {
         setErrors({ apiError: 'Server error' });
       }
@@ -107,6 +126,20 @@ const Register = () => {
             onChange={handleChange} 
           />
           {errors.password && <span className="error-msg">{errors.password}</span>}
+          <small className="password-hint">
+            Password must be at least 8 characters with one uppercase letter (A-Z) and one special character (!@#$%^&*).
+          </small>
+        </div>
+
+        <div>
+          <label>Confirm Password:</label>
+          <input 
+            type="password" 
+            name="confirmPassword" 
+            value={confirmPassword} 
+            onChange={handleChange} 
+          />
+          {errors.confirmPassword && <span className="error-msg">{errors.confirmPassword}</span>}
         </div>
 
         <div>

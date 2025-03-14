@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './Cart.css';
 
@@ -25,7 +25,6 @@ const Cart = () => {
   const { isAuthenticated, token } = useAuth();
   const sessionId = getSessionId();
   const location = useLocation();
-  const navigate = useNavigate();
 
   // Force a refresh when component mounts
   useEffect(() => {
@@ -66,6 +65,23 @@ const Cart = () => {
       
       const data = await response.json();
       console.log('Cart data received:', data);
+      
+      // Clean up any cart items with null products
+      if (data && data.items && data.items.length > 0) {
+        const validItems = data.items.filter(item => item.product !== null);
+        
+        // If we found invalid items, clean up the cart
+        if (validItems.length < data.items.length) {
+          console.log('Found invalid cart items, using filtered data');
+          
+          // Just use the filtered data for now
+          data.items = validItems;
+          
+          // Optionally, we could update the server with a clean cart, but we'll
+          // let the server handle this on its own to avoid complexity here
+        }
+      }
+      
       setCart(data);
       setLoading(false);
     } catch (error) {
@@ -119,6 +135,8 @@ const Cart = () => {
 
   const updateQuantity = async (productId, quantity) => {
     try {
+      console.log('Updating quantity for product:', productId, 'to', quantity);
+      
       const headers = {
         'Content-Type': 'application/json',
         'X-Session-Id': sessionId
@@ -128,26 +146,47 @@ const Cart = () => {
         headers['Authorization'] = `Bearer ${token}`;
       }
       
+      console.log('Update headers:', headers);
+      
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/cart/${productId}`, {
         method: 'PUT',
         headers,
         body: JSON.stringify({ quantity })
       });
       
+      console.log('Update response status:', response.status);
+      
+      if (response.status === 404) {
+        // Item not found in cart - refresh the cart to get the latest state
+        console.log('Item not found in cart, refreshing cart data');
+        setLoading(true);
+        return;
+      }
+      
       if (!response.ok) {
-        throw new Error('Failed to update cart');
+        // Instead of throwing an error, just refresh the cart
+        console.log('Failed to update cart, refreshing cart data');
+        setLoading(true);
+        return;
       }
       
       const data = await response.json();
+      console.log('Cart data after update:', data);
+      
+      // Update the local cart state
       setCart(data);
     } catch (error) {
       console.error('Error updating cart:', error);
-      setError('Failed to update cart. Please try again later.');
+      // Instead of showing an error, just refresh the cart
+      console.log('Error occurred, refreshing cart data');
+      setLoading(true);
     }
   };
 
   const removeItem = async (productId) => {
     try {
+      console.log('Removing item from cart:', productId);
+      
       const headers = {
         'X-Session-Id': sessionId
       };
@@ -155,26 +194,49 @@ const Cart = () => {
       if (isAuthenticated && token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
+      
+      console.log('Remove headers:', headers);
       
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/cart/${productId}`, {
         method: 'DELETE',
         headers
       });
       
+      console.log('Remove response status:', response.status);
+      
+      if (response.status === 404) {
+        // Item not found in cart - refresh the cart to get the latest state
+        console.log('Item not found in cart, refreshing cart data');
+        setLoading(true);
+        return;
+      }
+      
       if (!response.ok) {
         throw new Error('Failed to remove item from cart');
       }
       
       const data = await response.json();
+      console.log('Cart data after removal:', data);
+      
+      // Update the local cart state
       setCart(data);
+      
+      // If the cart is now empty, force a refresh
+      if (!data.items || data.items.length === 0) {
+        setLoading(true);
+      }
     } catch (error) {
       console.error('Error removing item from cart:', error);
-      setError('Failed to remove item from cart. Please try again later.');
+      // Instead of showing an error, just refresh the cart
+      console.log('Error occurred, refreshing cart data');
+      setLoading(true);
     }
   };
 
   const clearCart = async () => {
     try {
+      console.log('Clearing cart');
+      
       const headers = {
         'X-Session-Id': sessionId
       };
@@ -183,20 +245,35 @@ const Cart = () => {
         headers['Authorization'] = `Bearer ${token}`;
       }
       
+      console.log('Clear cart headers:', headers);
+      
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/cart`, {
         method: 'DELETE',
         headers
       });
       
+      console.log('Clear cart response status:', response.status);
+      
       if (!response.ok) {
-        throw new Error('Failed to clear cart');
+        // Instead of throwing an error, just refresh the cart
+        console.log('Failed to clear cart, refreshing cart data');
+        setLoading(true);
+        return;
       }
       
       const data = await response.json();
+      console.log('Cart data after clearing:', data);
+      
+      // Update the local cart state
       setCart(data);
+      
+      // Force a refresh to show the empty cart
+      setLoading(true);
     } catch (error) {
       console.error('Error clearing cart:', error);
-      setError('Failed to clear cart. Please try again later.');
+      // Instead of showing an error, just refresh the cart
+      console.log('Error occurred, refreshing cart data');
+      setLoading(true);
     }
   };
 
@@ -206,18 +283,9 @@ const Cart = () => {
     }
     
     return cart.items.reduce((total, item) => {
+      if (!item.product) return total;
       return total + (item.product.Price * item.quantity);
     }, 0).toFixed(2);
-  };
-
-  // Function to handle checkout button click
-  const handleCheckout = () => {
-    console.log("Checkout button clicked");
-    const path = isAuthenticated ? "/checkout" : "/login?redirect=checkout";
-    console.log("Navigating to:", path);
-    
-    // Use direct window location change instead of React Router navigation
-    window.location.href = path;
   };
 
   if (loading) {
@@ -245,44 +313,48 @@ const Cart = () => {
       <h1>Your Cart</h1>
       
       <div className="cart-items">
-        {cart.items.map((item) => (
-          <div key={item.product._id} className="cart-item">
-            <div className="item-details">
-              <h3>{item.product.Name}</h3>
-              <p className="item-description">{item.product.Description}</p>
-              <p className="item-price">${item.product.Price.toFixed(2)}</p>
-            </div>
-            
-            <div className="item-actions">
-              <div className="quantity-controls">
-                <button 
-                  onClick={() => updateQuantity(item.product._id, item.quantity - 1)}
-                  disabled={item.quantity <= 1}
-                >
-                  -
-                </button>
-                <span>{item.quantity}</span>
-                <button 
-                  onClick={() => updateQuantity(item.product._id, item.quantity + 1)}
-                  disabled={item.quantity >= item.product.Stock}
-                >
-                  +
-                </button>
+        {cart.items.map((item) => {
+          if (!item.product) return null;
+          
+          return (
+            <div key={item.product._id} className="cart-item">
+              <div className="item-details">
+                <h3>{item.product.Name}</h3>
+                <p className="item-description">{item.product.Description}</p>
+                <p className="item-price">${item.product.Price.toFixed(2)}</p>
               </div>
               
-              <div className="item-subtotal">
-                ${(item.product.Price * item.quantity).toFixed(2)}
+              <div className="item-actions">
+                <div className="quantity-controls">
+                  <button 
+                    onClick={() => updateQuantity(item.product._id, item.quantity - 1)}
+                    disabled={item.quantity <= 1}
+                  >
+                    -
+                  </button>
+                  <span>{item.quantity}</span>
+                  <button 
+                    onClick={() => updateQuantity(item.product._id, item.quantity + 1)}
+                    disabled={item.quantity >= item.product.Stock}
+                  >
+                    +
+                  </button>
+                </div>
+                
+                <div className="item-subtotal">
+                  ${(item.product.Price * item.quantity).toFixed(2)}
+                </div>
+                
+                <button 
+                  className="remove-item"
+                  onClick={() => removeItem(item.product._id)}
+                >
+                  Remove
+                </button>
               </div>
-              
-              <button 
-                className="remove-item"
-                onClick={() => removeItem(item.product._id)}
-              >
-                Remove
-              </button>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
       
       <div className="cart-summary">
@@ -295,12 +367,12 @@ const Cart = () => {
             Clear Cart
           </button>
           
-          <button 
+          <Link 
+            to={isAuthenticated ? "/checkout" : "/login?redirect=checkout"} 
             className="checkout-button"
-            onClick={handleCheckout}
           >
             Proceed to Checkout
-          </button>
+          </Link>
           
           <Link to="/products" className="continue-shopping">
             Continue Shopping

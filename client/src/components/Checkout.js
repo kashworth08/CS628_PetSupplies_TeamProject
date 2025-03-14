@@ -247,6 +247,15 @@ const CheckoutForm = () => {
     }
   };
 
+  // Function to handle demo checkout (skip payment)
+  const handleDemoCheckout = (e) => {
+    e.preventDefault();
+    console.log('Demo checkout - skipping payment processing');
+    
+    // Navigate directly to order confirmation
+    navigate('/order-confirmation');
+  };
+
   if (loading) {
     return <div className="loading">Loading checkout information...</div>;
   }
@@ -278,16 +287,17 @@ const CheckoutForm = () => {
       <div className="checkout-content">
         <div className="order-summary">
           <h2>Order Summary</h2>
-          {cart && cart.items && cart.items.map((item) => (
-            <div key={item.product._id} className="summary-item">
+          {cart && cart.items && cart.items.map((item, index) => (
+            <div key={index} className="summary-item">
               <div className="item-info">
                 <h3>{item.product.Name}</h3>
                 <p>Quantity: {item.quantity}</p>
               </div>
-              <p className="item-price">${(item.product.Price * item.quantity).toFixed(2)}</p>
+              <div className="item-price">
+                ${(item.product.Price * item.quantity).toFixed(2)}
+              </div>
             </div>
           ))}
-          
           <div className="order-total">
             <h3>Total</h3>
             <p>${calculateTotal()}</p>
@@ -297,7 +307,6 @@ const CheckoutForm = () => {
         <form onSubmit={handleSubmit} className="checkout-form">
           <div className="form-section">
             <h2>Shipping Information</h2>
-            
             <div className="form-group">
               <label htmlFor="fullName">Full Name</label>
               <input
@@ -363,21 +372,14 @@ const CheckoutForm = () => {
               
               <div className="form-group">
                 <label htmlFor="country">Country</label>
-                <select
+                <input
+                  type="text"
                   id="country"
                   name="country"
                   value={shippingInfo.country}
                   onChange={handleShippingChange}
                   required
-                >
-                  <option value="US">United States</option>
-                  <option value="CA">Canada</option>
-                  <option value="UK">United Kingdom</option>
-                  <option value="AU">Australia</option>
-                  <option value="DE">Germany</option>
-                  <option value="FR">France</option>
-                  <option value="JP">Japan</option>
-                </select>
+                />
               </div>
             </div>
           </div>
@@ -414,6 +416,15 @@ const CheckoutForm = () => {
               disabled={processing}
             >
               Back to Cart
+            </button>
+            
+            <button 
+              type="button" 
+              className="demo-button"
+              onClick={handleDemoCheckout}
+              disabled={processing}
+            >
+              Skip Payment (Demo)
             </button>
             
             <button 

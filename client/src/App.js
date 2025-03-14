@@ -19,7 +19,6 @@ import Unauthorized from "./components/Unauthorized";
 import Cart from "./components/Cart";
 import Checkout from "./components/Checkout";
 import OrderConfirmation from "./components/OrderConfirmation";
-import SimpleCheckout from "./components/SimpleCheckout";
 import TestAuth from "./components/TestAuth"; // Import the TestAuth component
 import { AuthProvider } from "./context/AuthContext";
 import AuthContext from "./context/AuthContext";
@@ -205,7 +204,7 @@ function App() {
               
               <Route 
                 path="/checkout" 
-                element={<SimpleCheckout />} 
+                element={<Checkout />} 
               />
               
               <Route 
