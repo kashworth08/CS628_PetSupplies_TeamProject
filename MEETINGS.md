@@ -1,1 +1,1 @@
-The team should create MEETINGS.md to show when each team has weekly meetings and what tasks each member worked on. Each team member must explain their own tasks. 
+https://docs.google.com/spreadsheets/d/1B5ehRVrEECoqDzZt2gLe2rchG5O4ZAWkE6Vo6K6dnIg/edit?gid=0#gid=0 
